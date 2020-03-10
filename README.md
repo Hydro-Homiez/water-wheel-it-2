@@ -1,4 +1,5 @@
-# CPSC_362_Sprint_1
+# Water Wheels Iteration 2
+An inventory management system for CPSC 362. The Flask framework is used to manage the page navigation and data handling with Python. HTML is used to create the base content while Bootstrap makes the interface visually appealing. 
 
 ## Directions
 1. Download PyCharm and GitHub Desktop.
@@ -19,23 +20,21 @@ b. pip install flask-sql-alchemy
 
 ## Resources
 For HTML and Python, doing all the interactive exercises should be enough to explain the basics. For Flask, I suggest watching the whole video. If there are any unfamiliar words, I would recommend researching them to understand them. 
-
-- HTML
+- HTML:
 https://www.w3schools.com/html/
 
-Python
+- Python:
 https://www.w3schools.com/python/default.asp
 
-Flask
+- Flask:
 https://www.youtube.com/watch?v=Z1RJmh_OqeA
 
 ## GitHub Information
-Make sure to create a branch for your own work. GitHub Desktop helps out with all of the git commands by providing a graphical interface. The menus allow quick branch creation, branch switches, and pulls without worry about having to remember each of the commands. The program also shows what changes that have been made compared to the last commit. Committing is also easier since there are checkboxes indicating what to include or not. Resetting the branch is also easier since it is available as a right-click option. 
+Make sure to create a branch for your own work. GitHub Desktop helps out with all of the git commands by providing a graphical interface. The menus allow quick branch creation, branch switches, and pulls without worry about having to remember each of the commands. The program also shows what changes that have been made compared to the last commit. Committing is also easier since there are checkboxes indicating what to include or not. Resetting the branch is also easier since it is available as a right-click option. Though GitHub Desktop is recommended, directions for GitHub Desktop and the GitHub commands for the terminal are shown below. 
 
-Below are directions for both GitHub Desktop and GitHub terminal commands
-### GitHubDesktop
+### GitHub Desktop
 ##### Create a branch
-- In current branch menu tab, the dropdown menu should display the branch list. Select master (stashing changes if needed), and create a new branch under the same current branch menu tab by inputing the new branch name in the text input and pressing new branch. This should create a branch based off of master instead of another in progress branch.
+- In current branch menu tab, the dropdown menu should display the branch list. Select master (stashing changes if needed), and create a new branch under the same current branch menu tab by inputting the new branch name in the text input and pressing new branch. This should create a branch based off of master instead of another in progress branch.
 ##### Commit changes
 - Select the files you want to commit on the left menu bar by pressing the checkboxes. Add a message under the summary text box then press the blue commit button. On the top right menu, press the push origin button if it has not been done already. 
 ##### Switching branches
