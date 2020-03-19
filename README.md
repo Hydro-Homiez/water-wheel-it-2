@@ -14,12 +14,12 @@ An inventory management system for CPSC 362. The Flask framework is used to mana
 - Press OK to confirm the environment and exit out of settings.
 5. Open the terminal located on the bottom left-hand corner. Make sure that (venv) appears before the C:\ path. If not, set up your interpreter again (Step 4).
 6. Run the pip install commands for flask and flask_sql alchemy.
-a. pip install flask
-b. pip install flask-sql-alchemy
+- pip install flask
+- pip install flask-sqlalchemy
 7. Use the command python app.py to run the project. 
 
 ## Resources
-For HTML and Python, doing all the interactive exercises should be enough to explain the basics. For Flask, I suggest watching the whole video. If there are any unfamiliar words, I would recommend researching them to understand them. 
+For HTML and Python, doing all the interactive exercises should be enough to explain the basics. For Flask, I suggest watching the whole video. If there are any unfamiliar phrases, I would recommend researching them to understand them. 
 - HTML:
 https://www.w3schools.com/html/
 
