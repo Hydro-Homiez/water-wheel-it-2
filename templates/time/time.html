@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% include 'reuseable_components/head_tag_information.html' %}
+    <title>Overview</title>
+</head>
+<body>
+    {% include 'reuseable_components/navigation_bar.html' %}
+    <h1>Time Sheet</h1>
+        <form action="/time" method="POST">
+        <p>Employee ID</p>
+        <input type="text" name="id-input">
+        <input type="submit" value="Add Item">
+    </form>
+    <div>
+        {% for t in work_times %}
+            {% if t.in_work %}
+                <span>Start Time: </span>
+            {% else %}
+                <span>End Time: </span>
+            {% endif %}
+            <span>{{t.current_time}}</span>
+            <span>User: {{t.employee_first_name}} {{t.employee_last_name}}</span>
+            <br>
+        {% endfor %}
+    </div>
+</body>
+</html>
