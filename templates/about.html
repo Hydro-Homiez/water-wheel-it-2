@@ -5,17 +5,15 @@
     <title>About</title>
 </head>
 <body>
-{% include 'reuseable_components/navigation_bar.html' %}
-    <div class="text">
-        <section class="w3-container w3-center">
-            <h1>
-                About Us
-            </h1>
+    {% include 'reuseable_components/navigation_bar.html' %}
+    <div class="container">
+        <div class="col text-center">
+            <h1>About Us</h1>
             <p>
-            Welcome to our page! We are Water Wheel, a small company based in Fullerton, California. Our goal is to make a well designed database to help you, the user. We'd love it if you were to submit any feedback (good or bad) at davidhuang@waterwheelcompany.com.
+                Welcome to our page! We are Water Wheel, a small company based in Fullerton, California. Our goal is to make a well designed database to help you, the user. We'd love it if you were to submit any feedback (good or bad) at davidhuang@waterwheelcompany.com.
             </p>
-            <img src="waterwheel.png" alt="Water Wheel">
-        </section>
+            <img src="{{ url_for('static', filename='images/wwlogo1.png') }}" alt="Water Wheel" width="250px;" height="250px;">
+        </div>
     </div>
 </body>
 </html>

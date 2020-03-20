@@ -36,25 +36,59 @@ class Product(db.Model):
 
 class WorkTime(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     employee_first_name = db.Column(db.Integer, db.ForeignKey('user.first_name'), nullable=False)
     employee_last_name = db.Column(db.Integer, db.ForeignKey('user.last_name'), nullable=False)
     current_time = db.Column(db.DateTime, nullable=False)
     in_work = db.Column(db.Boolean, db.ForeignKey('user.in_work'), nullable=False)
 
 
-# class EndTime(db.Model):
-#     id = db.Column(db.Integer, primary_key=True, nullable=False, autoincrement=True)
-#     employee_first_name = db.Column(db.Integer, db.ForeignKey('user.first_name'), nullable=False)
-#     employee_last_name = db.Column(db.Integer, db.ForeignKey('user.last_name'), nullable=False)
-#     end_time = db.Column(db.DateTime, nullable=False)
-
-
 # Page Routing
+# Single Page Navigation
 @app.route('/')
 def index():
     return render_template('index.html')
 
 
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+
+@app.route('/profile', )
+def profile():
+    users = User.query.order_by(User.id).all()
+    return render_template('/user_management/profile.html', user_list=users)
+
+
+@app.route('/overview')
+def overview():
+    return render_template('overview.html')
+
+
+@app.route('/time', methods=['POST', 'GET'])
+def time():
+    if request.method == 'POST':
+        t = datetime.datetime.now().replace(microsecond=0)
+        user_id = request.form['id-input']
+
+        user = User.query.get_or_404(user_id)
+        if user.in_work:
+            user.in_work = False
+        else:
+            user.in_work = True
+        new_time = WorkTime(employee_first_name=user.first_name, employee_last_name=user.last_name, employee_id=user.id,
+                            current_time=t, in_work=user.in_work)
+        db.session.add(new_time)
+        try:
+            db.session.commit()
+        except:
+            print("Not commited")
+    work_times = WorkTime.query.order_by(WorkTime.current_time).all()
+    return render_template('time/time.html', work_times=work_times)
+
+
+# User Management Navigation
 @app.route('/login', methods=['POST', 'GET'])
 def login():
     if request.method == 'POST':
@@ -99,9 +133,7 @@ def new_user():
             db.session.commit()
             return redirect('/profile')
         except:
-            print(new_user_obj.first_name)
             users = User.query.order_by(User.id).all()
-            print(users)
             return 'There was an issue adding the new user: '
 
     return render_template('/user_management/new_user.html')
@@ -112,6 +144,17 @@ def forgot_password():
     return render_template('/user_management/forgot_password.html')
 
 
+@app.route('/login_success')
+def login_success():
+    return render_template('/user_management/login_success.html')
+
+
+@app.route('/login_fail')
+def login_fail():
+    return render_template('/user_management/login_fail.html')
+
+
+# Product Mangement Navigation
 @app.route('/manage', methods=['POST', 'GET'])
 def manage():
     if request.method == 'POST':
@@ -163,52 +206,6 @@ def update(id):
 
     else:
         return render_template('product_management/update.html', product=product)
-
-
-@app.route('/about')
-def about():
-    return render_template('about.html')
-
-
-@app.route('/profile', )
-def profile():
-    users = User.query.order_by(User.id).all()
-    return render_template('/user_management/profile.html', user_list=users)
-
-
-@app.route('/overview')
-def overview():
-    return render_template('overview.html')
-
-
-@app.route('/time', methods=['POST', 'GET'])
-def time():
-    if request.method == 'POST':
-        t = datetime.datetime.now().replace(microsecond=0)
-        user_id = request.form['id-input']
-
-        user = User.query.get_or_404(user_id)
-        if user.in_work:
-            print("True")
-            user.in_work = False
-            new_time = WorkTime(employee_first_name=user.first_name, employee_last_name=user.last_name, current_time=t,
-                                in_work=user.in_work)
-            db.session.add(new_time)
-        else:
-            print("False")
-            user.in_work = True
-            new_time = WorkTime(employee_first_name=user.first_name, employee_last_name=user.last_name, current_time=t,
-                                in_work=user.in_work)
-            db.session.add(new_time)
-            print(f'Time: {new_time.current_time}')
-        print(f'User: {user.in_work}')
-        try:
-            db.session.commit()
-            print("Commited")
-        except:
-            print("Not commited")
-    work_times = WorkTime.query.order_by(WorkTime.current_time).all()
-    return render_template('time/time.html', work_times=work_times)
 
 
 if __name__ == "__main__":
