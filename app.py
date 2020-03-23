@@ -19,8 +19,9 @@ class User(db.Model):
     in_work = db.Column(db.Boolean, nullable=False)
 
     def __repr__(self):
-        return '<User: %r, %r, %r, %r, %r, %r, %r' % self.id % self.username % self.email % self.first_name % \
-               self.last_name % self.password % self.in_work
+        return '<User-id: ' + self.id + ', username: ' + self.username + ', email: ' + self.email + ', first name: ' + \
+                self.first_name + ', last name: ' + self.last_name + ', password: ' + self.password + ', in work: ' + \
+                self.in_work + '>'
 
 
 class Product(db.Model):
@@ -30,7 +31,8 @@ class Product(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):
-        return '<Product: %r, %r, %r, %r>' % self.id % self.name % self.manufacturer % self.quantity
+        return '<Product-id: ' + self.id + ', name: ' + self.name + ', manufacturer: ' + self.manufacturer + ', quantity: ' \
+               + self.quantity + '>'
 
 
 class WorkTime(db.Model):
@@ -206,7 +208,12 @@ def search():
         if search_query == "":
             return render_template('reusable_components/error.html', page='Search',
                                    error_message='Make sure to fill in the search bar.')
-        search_results = Product.query.filter(Product.name.contains(search_query)).all()
+        temp_results = Product.query.filter(Product.name.contains(search_query)).all()
+        temp_results += Product.query.filter(Product.manufacturer.contains(search_query)).all()
+        search_results = []
+        for t in temp_results:
+            if t not in search_results:
+                search_results.append(t)
     return render_template('product_management/search_results_table.html', search_results=search_results)
 
 
