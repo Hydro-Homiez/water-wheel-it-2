@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% include 'reusable_components/head_tag_information.html' %}
+    <title>Overview</title>
+</head>
+<body>
+    {% include 'reusable_components/navigation_bar.html' %}
+    <div class="container">
+        <br>
+        <div class="content">
+            <h2>Clock-In</h2>
+            <br>
+            <form action="/time" method="POST">
+                <div class="form-label-group">
+                    <input class="form-control" type="text" name="id-input" placeholder="Employee ID">
+                </div>
+                <br>
+                <input class="btn btn-lg btn-primary" type="submit" value="Enter">
+            </form>
+            {% if work_times|length < 1 %}
+                <h4 style="text-align: center">There is no time currently recorded.</h4>
+            {% else %}
+                <h2 style="text-align: center">Time Sheet</h2>
+                <br>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>In/Out</th>
+                            <th>Time</th>
+                            <th>Employee</th>
+                            <th>Employee ID</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in work_times %}
+                            <tr>
+                                {% if t.in_work %}
+                                    <td>In</td>
+                                {% else %}
+                                    <td>Out</td>
+                                {% endif %}
+                                <td>{{ t.current_time }}</td>
+                                <td>{{ t.employee_first_name }} {{ t.employee_last_name }}</td>
+                                <td>{{ t.employee_id }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

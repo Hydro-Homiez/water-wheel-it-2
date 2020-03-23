@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% include 'reusable_components/head_tag_information.html' %}
+    <title>{{ page }} Error</title>
+</head>
+<body>
+    {% include 'reusable_components/navigation_bar.html' %}
+    <div class="container">
+        <br>
+        <h2>{{ page }} Error</h2>
+        <p>{{ error_message }}</p>
+        <p>Please return to the previous page by pressing the back button in the browser.</p>
+    </div>
+</body>
+</html>
