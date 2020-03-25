@@ -1,10 +1,10 @@
 from flask import Flask, render_template, request, redirect
 from flask_sqlalchemy import SQLAlchemy
+import barcode_func as bf
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
-
 
 class User(db.Model):
     id = db.Column(db.String, primary_key=True)
@@ -24,8 +24,13 @@ class Product(db.Model):
     manufacturer = db.Column(db.String(200), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
 
+    # create barcode blob column
+    # REVISION FROM ABOVE COMMENT
+    # Changed to String as of 5:13 AM will be querying by matching image names
+    barcode = db.Column(db.BLOB, unique=True, nullable=False)
+
     def __repr__(self):
-        return '<Product: %r, %r, %r, %r>' % self.id % self.name % self.manufacturer % self.quantity
+        return '<Product: %r, %r, %r, %r>' % self.id % self.name % self.manufacturer % self.quantity % self.barcode
 
 
 @app.route('/')
@@ -69,7 +74,8 @@ def new_user():
         new_first_name = request.form['first-name-input']
         new_last_name = request.form['last-name-input']
         new_password = request.form['password-input']
-        new_user = User(id=new_id, username=new_username, email=new_email, first_name=new_first_name, last_name=new_last_name, password=new_password)
+        new_user = User(id=new_id, username=new_username, email=new_email, first_name=new_first_name
+                        , last_name=new_last_name, password=new_password)
 
         try:
             db.session.add(new_user)
@@ -96,7 +102,16 @@ def manage():
         new_name = request.form['name-input']
         new_manufacturer = request.form['manufacturer-input']
         new_quantity = request.form['quantity-input']
-        new_item = Product(id=new_id, name=new_name, manufacturer=new_manufacturer, quantity=new_quantity)
+
+        # added barcode func input for new and returning item
+        bf.make_barcode_image(new_name)
+        # new_barcode = new_name + ".jpeg"
+
+        new_barcode = bf.convertToBinaryData(new_name + ".jpeg")
+        #print(new_barcode)
+        new_item = Product(id=new_id, name=new_name, manufacturer=new_manufacturer
+                           , quantity=new_quantity, barcode=new_barcode)
+
 
         try:
             db.session.add(new_item)
@@ -107,6 +122,10 @@ def manage():
 
     else:
         products = Product.query.order_by(Product.id).all()
+
+        # returns the full file name to display in the table???? now gotta adjust so t'll query,
+        # the issue is with the pathing, and flask is having trouble finding the image source
+
         return render_template('/product_management/manage.html', products=products)
 
 
@@ -132,6 +151,9 @@ def update(id):
         product.manufacturer = request.form['manufacturer-input']
         product.quantity = request.form['quantity-input']
 
+        # added barcode func
+        product.barcode = request.form['barcode-input']
+
         try:
             db.session.commit()
             return redirect('/manage')
@@ -156,6 +178,12 @@ def profile():
 @app.route('/overview')
 def overview():
     return render_template('overview.html')
+
+
+@app.route('/barcode')
+def show_barcode():
+    file_data = Product.query.filter_by(id=1).first()
+    return send_file(BytesIO(file_data.data), )
 
 
 if __name__ == "__main__":
