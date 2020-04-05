@@ -1,10 +1,14 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
-import barcode_func as bf
+
+import json
+import barcode
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
+
+
 
 class User(db.Model):
     id = db.Column(db.String, primary_key=True)
@@ -23,11 +27,10 @@ class Product(db.Model):
     name = db.Column(db.String(200), nullable=False)
     manufacturer = db.Column(db.String(200), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
-
-    # create barcode blob column
-    # REVISION FROM ABOVE COMMENT
-    # Changed to String as of 5:13 AM will be querying by matching image names
-    barcode = db.Column(db.BLOB, unique=True, nullable=False)
+    # barcode is an added property that uses big integer
+    # to store over 12 digits (minimum needed for the
+    # barcode I selected
+    barcode = db.Column(db.BigInteger)
 
     def __repr__(self):
         return '<Product: %r, %r, %r, %r>' % self.id % self.name % self.manufacturer % self.quantity % self.barcode
@@ -102,16 +105,20 @@ def manage():
         new_name = request.form['name-input']
         new_manufacturer = request.form['manufacturer-input']
         new_quantity = request.form['quantity-input']
-
-        # added barcode func input for new and returning item
-        bf.make_barcode_image(new_name)
-        # new_barcode = new_name + ".jpeg"
-
-        new_barcode = bf.convertToBinaryData(new_name + ".jpeg")
-        #print(new_barcode)
+        # Use the primary unique ID to make unique barcodes
+        b = int(new_id) + 100000000000
+        # Set the new product barcode to the b variable above
         new_item = Product(id=new_id, name=new_name, manufacturer=new_manufacturer
-                           , quantity=new_quantity, barcode=new_barcode)
-
+                           , quantity=new_quantity, barcode=b)
+        # Uses the ean13 barcode format to incorporate the b variable
+        ean = barcode.get('ean13', str(b))
+        # Optional print statement to see process
+        print(f'code: {ean.get_fullcode()}')
+        # The file is saved by using the unique primary ID of
+        # the product to easily obtain the file
+        filename = ean.save(new_id)
+        # Optional print statement
+        print(f'filename: {filename}')
 
         try:
             db.session.add(new_item)
@@ -122,11 +129,17 @@ def manage():
 
     else:
         products = Product.query.order_by(Product.id).all()
-
-        # returns the full file name to display in the table???? now gotta adjust so t'll query,
-        # the issue is with the pathing, and flask is having trouble finding the image source
-
         return render_template('/product_management/manage.html', products=products)
+
+
+# New URL for Barcode branch
+@app.route('/manage/download/<int:id>', methods=['GET', 'POST'])
+def download(id):
+    # Uses the product unique primary ID to locate the file
+    file_name = str(id) + '.svg'
+    # Returns the .svg file of the barcode
+    # you can do that {} method and store it in a file, figure out how to put it in a file first
+    return send_file(file_name)
 
 
 @app.route('/manage/delete/<int:id>')
@@ -175,15 +188,22 @@ def profile():
     return render_template('/user_management/profile.html', user_list=users)
 
 
-@app.route('/overview')
-def overview():
-    return render_template('overview.html')
+# displays the calendar page
+# calendar uses the "full calendar" api
+@app.route('/calendar')
+def calendar():
+    return render_template("calendar.html")
 
+# This is used so that users can input events into the calender using the 'events.json'
+# It can be adjusted to query data from a db in the next iteration if requested
+@app.route('/data')
+def return_data():
+    start_date = request.args.get('start', '')
+    end_date = request.args.get('end', '')
 
-@app.route('/barcode')
-def show_barcode():
-    file_data = Product.query.filter_by(id=1).first()
-    return send_file(BytesIO(file_data.data), )
+    with open("events.json", "r") as input_data:
+
+        return input_data.read()
 
 
 if __name__ == "__main__":
