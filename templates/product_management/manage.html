@@ -18,6 +18,7 @@
     <a href="/profile" class="w3-button w3-bar-item">Tour</a>
     <a href="/manage" class="w3-button w3-bar-item">Database</a>
     <a href="/about" class="w3-button w3-bar-item">About</a>
+    <a href="/calendar" class="w3-button w3-bar-item">Calendar</a>
 </nav>
 <div class="content">
     <h1 style="text-align: center">Items</h1>
@@ -30,17 +31,24 @@
             <th>Name</th>
             <th>Manufacturer</th>
             <th>Quantity</th>
+            <th>Barcode</th>
+
         </tr>
         {% for product in products %}
-            <tr>
+            <td>
                 <td>{{ product.id }}</td>
                 <td>{{ product.name }}</td>
                 <td>{{ product.manufacturer }}</td>
                 <td>{{ product.quantity }}</td>
+                <!-- displays barcode number -->
+                <td>{{ product.barcode }}</td>
                 <td>
                     <a href="/manage/delete/{{product.id}}">Delete</a>
                     <br>
                     <a href="/manage/update/{{product.id}}">Update</a>
+                    <br>
+                    <!-- url to download the .svg file basaed on the product id -->
+                    <a href="/manage/download/{{product.id}}">Download barcode</a>
                 </td>
             </tr>
         {% endfor %}
@@ -56,6 +64,8 @@
         <input type="text" name="manufacturer-input">
         <p>Quantity</p>
         <input type="text" name="quantity-input">
+
+
         <br>
         <br>
         <input type="submit" value="Add Item">
