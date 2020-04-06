@@ -44,6 +44,16 @@
                     <input class="form-control" type="text" name="quantity-input" placeholder="Quantity">
                 </div>
                 <br>
+                <div class="form-group">
+                    <select class="form-control" name="category-input">
+                        <option disabled selected value>Select a category</option>
+                        <option value="Food">Food</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Apparel">Apparel</option>
+                        <option value="Supplies">House Supplies</option>
+                    </select>
+                </div>
+                <br>
                 <input class="btn btn-lg btn-primary" type="submit" value="Add Item">
             </form>
         </div>
@@ -59,6 +69,7 @@
                     <th>ID</th>
                     <th>Name</th>
                     <th>Manufacturer</th>
+                    <th>Category</th>
                     <th>Quantity</th>
                     <th>Manage</th>
                 </tr>
@@ -69,6 +80,7 @@
                         <td>{{ product.id }}</td>
                         <td>{{ product.name }}</td>
                         <td>{{ product.manufacturer }}</td>
+                        <td>{{ product.category }}</td>
                         <td>{{ product.quantity }}</td>
                         <td>
                             <a href="/manage/delete/{{product.id}}">Delete</a>
@@ -97,7 +109,6 @@
             document.getElementById("add-button").style.display = "none";
             document.getElementById("product-table").style.display="none";
         }
-
         function reset_buttons() {
             document.getElementById("add-product-section").style.display = "none";
             document.getElementById("search-product-section").style.display = "none";

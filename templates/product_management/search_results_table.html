@@ -21,6 +21,7 @@
                 <th>ID</th>
                 <th>Name</th>
                 <th>Manufacturer</th>
+                <th>Category</th>
                 <th>Quantity</th>
                 <th>Manage</th>
             </tr>
@@ -31,6 +32,7 @@
                     <td>{{ s.id }}</td>
                     <td>{{ s.name }}</td>
                     <td>{{ s.manufacturer }}</td>
+                    <td>{{ s.category }}</td>
                     <td>{{ s.quantity }}</td>
                     <td>
                         <a href="/manage/delete/{{s.id}}">Delete</a>

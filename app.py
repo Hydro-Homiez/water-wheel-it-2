@@ -28,6 +28,7 @@ class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
     manufacturer = db.Column(db.String(200), nullable=False)
+    category = db.Column(db.String(200), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
 
     def __repr__(self):
@@ -149,8 +150,10 @@ def manage():
         new_id = request.form['id-input']
         new_name = request.form['name-input']
         new_manufacturer = request.form['manufacturer-input']
+        new_category = request.form['category-input']
         new_quantity = request.form['quantity-input']
-        new_item = Product(id=new_id, name=new_name, manufacturer=new_manufacturer, quantity=new_quantity)
+        new_item = Product(id=new_id, name=new_name, manufacturer=new_manufacturer, category=new_category,
+                           quantity=new_quantity)
 
         try:
             db.session.add(new_item)
@@ -184,11 +187,10 @@ def update(id):
     print(f'product {product.name}')
 
     if request.method == 'POST':
-        print(f'test1')
         product.name = request.form['name-input']
         product.manufacturer = request.form['manufacturer-input']
+        product.category = request.form['category-input']
         product.quantity = request.form['quantity-input']
-        print(f'test2')
 
         try:
             db.session.commit()
@@ -210,6 +212,7 @@ def search():
                                    error_message='Make sure to fill in the search bar.')
         temp_results = Product.query.filter(Product.name.contains(search_query)).all()
         temp_results += Product.query.filter(Product.manufacturer.contains(search_query)).all()
+        temp_results += Product.query.filter(Product.category.contains(search_query)).all()
         search_results = []
         for t in temp_results:
             if t not in search_results:
