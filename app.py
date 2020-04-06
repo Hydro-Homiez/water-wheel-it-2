@@ -14,6 +14,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
 
+
 # changed id column to Integer
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -22,6 +23,9 @@ class User(db.Model, UserMixin):
     first_name = db.Column(db.String(200), nullable=False)
     last_name = db.Column(db.String(200), nullable=False)
     password = db.Column(db.String(200), nullable=False)
+
+    # added admin property to check if a user is an admin
+    admin = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         return '<User: %r, %r>' % self.id % self.username
@@ -61,7 +65,8 @@ def login():
                     name_found = True
                     if new_password == user.password:
                         password_found_found = True
-                        return redirect('/profile')
+                        # changed from original redirect to /profile
+                        return redirect('/')
                     else:
                         return 'Wrong password'
                 else:
@@ -88,7 +93,8 @@ def new_user():
         try:
             db.session.add(new_user)
             db.session.commit()
-            return redirect('/profile')
+            # changed from redirect /profile to /login
+            return redirect('/login')
         except:
             print(new_user.first_name)
             users = User.query.order_by(User.id).all()
@@ -187,12 +193,6 @@ def about():
     return render_template('about.html')
 
 
-@app.route('/profile', )
-def profile():
-    users = User.query.order_by(User.id).all()
-    return render_template('/user_management/profile.html', user_list=users)
-
-
 # displays the calendar page
 # calendar uses the "full calendar" api
 @app.route('/calendar')
@@ -220,15 +220,6 @@ class HomepageRedirect(BaseView):
         return self.render('index.html')
 
 
-# Redirects to login authentication
-class AdminLogin(BaseView):
-    @expose('/')
-    def admin_login(self):
-        user = User.query.get({"id": 1})
-        login_user(user)
-        return self.render('admin_management/admin_login.html')
-
-
 # Redirects to logout authentication
 class AdminLogout(BaseView):
     @expose('/')
@@ -251,7 +242,7 @@ def load_user(user_id):
 
 # this creates a model class for the User Table
 class UserModel(ModelView):
-    # makes it so that it is accessible/not based on a condition
+    # The User Model is only accessible if the admin is logged in and authenticated
     def is_accessible(self):
         return current_user.is_authenticated
 
@@ -260,25 +251,43 @@ class UserModel(ModelView):
 admin = Admin(app)
 # Add administrative views here
 admin.add_view(UserModel(User, db.session))
-admin.add_view(AdminLogin(name="Login"))
+# admin.add_view(AdminLogin(name="Login"))
 admin.add_view(AdminLogout(name="Logout"))
 admin.add_view(HomepageRedirect(name="Return to Homepage"))
 
 
-'''
-@app.route('/admin-login')
+# Admin must login in order to view the page, admin is authenticated upon successful login
+@app.route('/admin-login', methods=['POST', 'GET'])
 def admin_login():
-    user = User.query.get({"id": 1})
-    login_user(user)
-    return "Admin Logged In"
+    if current_user.is_authenticated is True:
+        return redirect('/admin')
+    elif request.method == 'POST':
+        new_username = request.form['username-input']
+        new_password = request.form['password-input']
 
-'''
-'''
-@app.route('/admin-logout')
-def admin_logout():
-    logout_user()
-    return "Admin Logged out"
-'''
+        try:
+            name_found = False
+            password_found = False
+            admin_found = False
+            users = User.query.order_by(User.id).all()
+            for user in users:
+                if new_username == user.username:
+                    name_found = True
+                    if new_password == user.password:
+                        password_found = True
+                        if user.admin is True:
+                            login_user(user)
+                            return redirect('/admin')
+                        else:
+                            return 'Access Denied, User not Admin'
+                    else:
+                        return 'Wrong password'
+                else:
+                    return 'Admin does not exist'
+        except:
+            return "Error please contact Management"
+
+    return render_template('/admin_management/admin_login.html')
 
 
 if __name__ == "__main__":
