@@ -1,17 +1,22 @@
 from flask import Flask, render_template, request, redirect, send_file, jsonify
 from flask_sqlalchemy import SQLAlchemy
-
 import json
 import barcode
+
+# importing flask admin lib
+from flask_admin import Admin, BaseView, expose
+# Allows admin page to view models
+from flask_admin.contrib.sqla import ModelView
+# Allows for login authentication
+from flask_login import UserMixin, LoginManager, current_user, login_user, logout_user
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
 
-
-
-class User(db.Model):
-    id = db.Column(db.String, primary_key=True)
+# changed id column to Integer
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(200), nullable=False)
     email = db.Column(db.String(200), nullable=False)
     first_name = db.Column(db.String(200), nullable=False)
@@ -194,6 +199,7 @@ def profile():
 def calendar():
     return render_template("calendar.html")
 
+
 # This is used so that users can input events into the calender using the 'events.json'
 # It can be adjusted to query data from a db in the next iteration if requested
 @app.route('/data')
@@ -204,6 +210,75 @@ def return_data():
     with open("events.json", "r") as input_data:
 
         return input_data.read()
+
+
+# Admin Access code
+# Redirects back to the homepage of the website
+class HomepageRedirect(BaseView):
+    @expose('/')
+    def index(self):
+        return self.render('index.html')
+
+
+# Redirects to login authentication
+class AdminLogin(BaseView):
+    @expose('/')
+    def admin_login(self):
+        user = User.query.get({"id": 1})
+        login_user(user)
+        return self.render('admin_management/admin_login.html')
+
+
+# Redirects to logout authentication
+class AdminLogout(BaseView):
+    @expose('/')
+    def admin_logout(self):
+        logout_user()
+        return self.render('admin_management/admin_logout.html')
+
+
+# set optional bootswatch theme
+app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
+app.config['SECRET_KEY'] = 'mysecret'
+
+login = LoginManager(app)
+
+
+@login.user_loader
+def load_user(user_id):
+    return User.query.get(user_id)
+
+
+# this creates a model class for the User Table
+class UserModel(ModelView):
+    # makes it so that it is accessible/not based on a condition
+    def is_accessible(self):
+        return current_user.is_authenticated
+
+
+# this allows a specific admin page to be accessed through /admin
+admin = Admin(app)
+# Add administrative views here
+admin.add_view(UserModel(User, db.session))
+admin.add_view(AdminLogin(name="Login"))
+admin.add_view(AdminLogout(name="Logout"))
+admin.add_view(HomepageRedirect(name="Return to Homepage"))
+
+
+'''
+@app.route('/admin-login')
+def admin_login():
+    user = User.query.get({"id": 1})
+    login_user(user)
+    return "Admin Logged In"
+
+'''
+'''
+@app.route('/admin-logout')
+def admin_logout():
+    logout_user()
+    return "Admin Logged out"
+'''
 
 
 if __name__ == "__main__":
