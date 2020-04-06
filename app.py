@@ -1,9 +1,10 @@
 import datetime
 
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, session
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+app.secret_key = "super secret key"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
 
@@ -16,12 +17,13 @@ class User(db.Model):
     first_name = db.Column(db.String(200), nullable=False)
     last_name = db.Column(db.String(200), nullable=False)
     password = db.Column(db.String(200), nullable=False)
-    in_work = db.Column(db.Boolean, nullable=False)
+    in_work = db.Column(db.Boolean, default=False)
+    location = db.Column(db.String(200), nullable=False)
 
     def __repr__(self):
         return '<User-id: ' + self.id + ', username: ' + self.username + ', email: ' + self.email + ', first name: ' + \
                 self.first_name + ', last name: ' + self.last_name + ', password: ' + self.password + ', in work: ' + \
-                self.in_work + '>'
+                self.in_work + ', location: ' + self.location + '>'
 
 
 class Product(db.Model):
@@ -30,6 +32,7 @@ class Product(db.Model):
     manufacturer = db.Column(db.String(200), nullable=False)
     category = db.Column(db.String(200), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
+    location = db.Column(db.String(200), nullable=False)
 
     def __repr__(self):
         return '<Product-id: ' + self.id + ', name: ' + self.name + ', manufacturer: ' + self.manufacturer + ', quantity: ' \
@@ -98,18 +101,21 @@ def login():
             for user in users:
                 if new_username == user.username:
                     if new_password == user.password:
-                        return redirect('/profile')
+                        session['user_location'] = user.location
+                        return redirect('/login_success')
                     else:
                         return render_template('reusable_components/error.html', page='Login',
                                                error_message='Wrong Password')
-                else:
-                    return render_template('reusable_components/error.html', page='Login',
-                                           error_message='User does not exist')
         except:
-            return 'Error'
+            return render_template('reusable_components/error.html', page='Login',
+                                   error_message='User does not exist')
 
     return render_template('/user_management/login.html')
 
+@app.route('/logout')
+def logout():
+    session.pop('user_location', None)
+    return redirect('/login')
 
 @app.route('/new_user', methods=['POST', 'GET'])
 def new_user():
@@ -120,10 +126,12 @@ def new_user():
         new_first_name = request.form['first-name-input']
         new_last_name = request.form['last-name-input']
         new_password = request.form['password-input']
-        new_user = User(id=new_id, username=new_username, email=new_email, first_name=new_first_name, last_name=new_last_name, password=new_password)
+        new_location = request.form['location-input']
+        user = User(id=new_id, username=new_username, email=new_email, first_name=new_first_name,
+                    last_name=new_last_name, password=new_password, location=new_location)
 
         try:
-            db.session.add(new_user)
+            db.session.add(user)
             db.session.commit()
             return redirect('/profile')
         except:
@@ -146,6 +154,7 @@ def login_fail():
 # Product Management Navigation
 @app.route('/manage', methods=['POST', 'GET'])
 def manage():
+    work_location = session.get('user_location', 'N/A')
     if request.method == 'POST':
         new_id = request.form['id-input']
         new_name = request.form['name-input']
@@ -153,8 +162,8 @@ def manage():
         new_category = request.form['category-input']
         new_quantity = request.form['quantity-input']
         new_item = Product(id=new_id, name=new_name, manufacturer=new_manufacturer, category=new_category,
-                           quantity=new_quantity)
-
+                           quantity=new_quantity, location=work_location)
+        print(new_item.location)
         try:
             db.session.add(new_item)
             db.session.commit()
@@ -164,7 +173,7 @@ def manage():
                                    error_message='There was an issue adding your product')
 
     else:
-        products = Product.query.order_by(Product.id).all()
+        products = Product.query.filter_by(location=work_location).order_by(Product.id).all()
         return render_template('/product_management/manage.html', products=products)
 
 
