@@ -206,7 +206,7 @@ def manage():
         print(f'filename: {filename}')
 
         new_item = Product(id=new_id, name=new_name, manufacturer=new_manufacturer, category=new_category,
-                           quantity=new_quantity, location=work_location)
+                           quantity=new_quantity, location=work_location, barcode=b)
         try:
             db.session.add(new_item)
             db.session.commit()
@@ -388,8 +388,9 @@ def admin_login():
                             return 'Access Denied, User not Admin'
                     else:
                         return 'Wrong password'
-                else:
-                    return 'Admin does not exist'
+                # This is commented out because the loop automatically terminates if the first user isn't found.
+                # else:
+                    # return 'Admin does not exist'
         except:
             return "Error please contact Management"
     return render_template('/admin_management/admin_login.html')

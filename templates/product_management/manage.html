@@ -91,6 +91,7 @@
                     <th>Category</th>
                     <th>Quantity</th>
                     <th>Location</th>
+                    <th>Barcode</th>
                     <th>Manage</th>
                 </tr>
                 </thead>
@@ -103,10 +104,13 @@
                         <td>{{ product.category }}</td>
                         <td>{{ product.quantity }}</td>
                         <td>{{ product.location }}</td>
+                        <td>{{ product.barcode }}</td>
                         <td>
                             <a href="/manage/delete/{{product.id}}">Delete</a>
                             <br>
                             <a href="/manage/update/{{product.id}}">Update</a>
+                            <br>
+                            <a href="/manage/download/{{product.id}}">Download barcode</a>
                         </td>
                     </tr>
                     {% endfor %}

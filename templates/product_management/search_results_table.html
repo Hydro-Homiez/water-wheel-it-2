@@ -24,6 +24,7 @@
                 <th>Category</th>
                 <th>Location</th>
                 <th>Quantity</th>
+                <th>Barcode</th>
                 <th>Manage</th>
             </tr>
             </thead>
@@ -36,10 +37,13 @@
                     <td>{{ s.category }}</td>
                     <td>{{ s.location }}</td>
                     <td>{{ s.quantity }}</td>
+                    <td>{{ s.barcode }}</td>
                     <td>
                         <a href="/manage/delete/{{s.id}}">Delete</a>
                         <br>
                         <a href="/manage/update/{{s.id}}">Update</a>
+                        <br>
+                        <a href="/manage/download/{{s.id}}">Download barcode</a>
                     </td>
                 </tr>
                 {% endfor %}
