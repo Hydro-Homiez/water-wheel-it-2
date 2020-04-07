@@ -212,16 +212,14 @@ def update(id):
         return render_template('product_management/update.html', product=product)
 
 
-@app.route('/search', methods=['GET', 'POST'])
+@app.route('/search_category', methods=['GET', 'POST'])
 def search():
     if request.method == 'POST':
-        search_query = request.form['search-input']
+        search_query = request.form['search-category-input']
         if search_query == "":
             return render_template('reusable_components/error.html', page='Search',
                                    error_message='Make sure to fill in the search bar.')
-        temp_results = Product.query.filter(Product.name.contains(search_query)).all()
-        temp_results += Product.query.filter(Product.manufacturer.contains(search_query)).all()
-        temp_results += Product.query.filter(Product.category.contains(search_query)).all()
+        temp_results = Product.query.filter(Product.category.contains(search_query)).all()
         search_results = []
         for t in temp_results:
             if t not in search_results:

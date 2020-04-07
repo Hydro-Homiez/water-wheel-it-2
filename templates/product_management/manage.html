@@ -7,10 +7,29 @@
 <body>
     {% include 'reusable_components/navigation_bar.html' %}
     <br>
-    <button class="btn btn-lg btn-primary float-right" id="search-button" onclick="search_product()"  style="margin-left:10px;margin-right:40px;">Search</button>
+    <button class="btn btn-lg btn-primary float-right" id="search-category-button" onclick="search_category()"  style="margin-left:10px;margin-right:40px;">Search By Category</button>
+    <button class="btn btn-lg btn-primary float-right" id="search-button" onclick="search_product()"  style="margin-left:10px;">Search</button>
     <button class="btn btn-lg btn-primary float-right" id="add-button" onclick="add_product()">Add</button>
     <div class="container">
         <br>
+        <div id="search-category-section" style="display:none;">
+                <br>
+                    <h3>Search Products By Category</h3>
+                <br>
+               <div class="form-group">
+                   <form action="/search_category" method="POST">
+                       <select class="form-control" name="search-category-input">
+                           <option disabled selected value>Select a category</option>
+                           <option value="Food">Food</option>
+                           <option value="Electronics">Electronics</option>
+                           <option value="Apparel">Apparel</option>
+                           <option value="Supplies">Supplies</option>
+                       </select>
+                       <br>
+                       <input class="btn btn-lg btn-primary" type="submit" value="Search">
+                   </form>
+               </div>
+        </div>
         <div id="search-product-section" style="display:none;">
             <form action="/search" method="POST">
                 <br>
@@ -50,7 +69,7 @@
                         <option value="Food">Food</option>
                         <option value="Electronics">Electronics</option>
                         <option value="Apparel">Apparel</option>
-                        <option value="Supplies">House Supplies</option>
+                        <option value="Supplies">Supplies</option>
                     </select>
                 </div>
                 <br>
@@ -101,17 +120,28 @@
             document.getElementById("add-button").style.marginRight = "40px";
             document.getElementById("add-button").setAttribute("onclick", "reset_buttons()");
             document.getElementById("search-button").style.display = "none";
+            document.getElementById("search-category-button").style.display = "none";
         }
         function search_product() {
             document.getElementById("search-product-section").style.display = "initial";
             document.getElementById("search-button").innerHTML = "X";
             document.getElementById("search-button").setAttribute("onclick", "reset_buttons()");
             document.getElementById("add-button").style.display = "none";
+            document.getElementById("search-category-button").style.display = "none";
+            document.getElementById("product-table").style.display="none";
+        }
+        function search_category() {
+            document.getElementById("search-category-section").style.display = "initial";
+            document.getElementById("search-category-button").innerHTML = "X";
+            document.getElementById("search-category-button").setAttribute("onclick", "reset_buttons()");
+            document.getElementById("add-button").style.display = "none";
+            document.getElementById("search-button").style.display = "none";
             document.getElementById("product-table").style.display="none";
         }
         function reset_buttons() {
             document.getElementById("add-product-section").style.display = "none";
             document.getElementById("search-product-section").style.display = "none";
+            document.getElementById("search-category-section").style.display = "none";
             document.getElementById("add-button").innerHTML = "Add";
             document.getElementById("add-button").style.display = "initial";
             document.getElementById("add-button").style.marginRight = "0px";
@@ -119,6 +149,9 @@
             document.getElementById("search-button").innerHTML = "Search";
             document.getElementById("search-button").style.display = "initial";
             document.getElementById("search-button").setAttribute("onclick", "search_product()");
+            document.getElementById("search-category-button").innerHTML = "Search By Category";
+            document.getElementById("search-category-button").style.display = "initial";
+            document.getElementById("search-button").setAttribute("onclick", "search_category()");
             document.getElementById("product-table").style.display="initial";
         }
     </script>
