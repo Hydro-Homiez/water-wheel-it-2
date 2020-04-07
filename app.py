@@ -100,7 +100,7 @@ def time():
         try:
             db.session.commit()
         except:
-            return render_template('reusable_components/error.html', page='Clock-in',
+            return render_template('reuseable_components/error.html', page='Clock-in',
                                    error_message='Time not committed')
     work_times = WorkTime.query.order_by(WorkTime.current_time).all()
     return render_template('time/time.html', work_times=work_times)
@@ -121,18 +121,20 @@ def login():
                         session['user_location'] = user.location
                         return redirect('/login_success')
                     else:
-                        return render_template('reusable_components/error.html', page='Login',
+                        return render_template('reuseable_components/error.html', page='Login',
                                                error_message='Wrong Password')
         except:
-            return render_template('reusable_components/error.html', page='Login',
+            return render_template('reuseable_components/error.html', page='Login',
                                    error_message='User does not exist')
 
     return render_template('/user_management/login.html')
+
 
 @app.route('/logout')
 def logout():
     session.pop('user_location', None)
     return redirect('/login')
+
 
 @app.route('/new_user', methods=['POST', 'GET'])
 def new_user():
@@ -145,7 +147,6 @@ def new_user():
         new_password = request.form['password-input']
         new_location = request.form['location-input']
 
-
         # checks if the admin code is correct to flag as admin, default code is set to 'admin'
         new_admin = request.form['admin-input']
         if new_admin == 'admin':
@@ -153,29 +154,21 @@ def new_user():
         else:
             new_admin = 0
             
-        new_user = User(id=new_id, username=new_username, email=new_email, first_name=new_first_name, 
-                        last_name=new_last_name, password=new_password, location=new_location, in_work=False, admin=new_admin)
+        new_user = User(id=new_id, username=new_username, email=new_email, first_name=new_first_name,
+                        last_name=new_last_name, password=new_password, location=new_location, in_work=False,
+                        admin=new_admin)
 
         try:
-            db.session.add(user)
+            db.session.add(new_user)
             db.session.commit()
             # changed from redirect /profile to /login
             return redirect('/login')
         except:
-            return render_template('reusable_components/error.html', page='Insertion',
+            return render_template('reuseable_components/error.html', page='Insertion',
                                    error_message='There was an issue adding the new user ')
 
     return render_template('/user_management/new_user.html')
 
-
-@app.route('/login_success')
-def login_success():
-    return render_template('/user_management/login_success.html')
-
-
-@app.route('/login_fail')
-def login_fail():
-    return render_template('/user_management/login_fail.html')
 
 @app.route('/login_success')
 def login_success():
@@ -219,7 +212,7 @@ def manage():
             db.session.commit()
             return redirect('/manage')
         except:
-            return render_template('reusable_components/error.html', page='Insertion',
+            return render_template('reuseable_components/error.html', page='Insertion',
                                    error_message='There was an issue adding your product')
 
     else:
@@ -246,7 +239,7 @@ def delete(id):
         db.session.commit()
         return redirect('/manage')
     except:
-        return render_template('reusable_components/error.html', page='Deletion',
+        return render_template('reuseable_components/error.html', page='Deletion',
                                error_message='There was a problem deleting that product')
 
 
@@ -268,12 +261,43 @@ def update(id):
             db.session.commit()
             return redirect('/manage')
         except:
-            return render_template('reusable_components/error.html', page='Update',
+            return render_template('reuseable_components/error.html', page='Update',
                                    error_message='There was an issue updating your task')
 
     else:
         return render_template('product_management/update.html', product=product)
 
+
+@app.route('/search', methods=['GET', 'POST'])
+def search():
+    if request.method == 'POST':
+        search_query = request.form['search-input']
+        if search_query == "":
+            return render_template('reuseable_components/error.html', page='Search',
+                                   error_message='Make sure to fill in the search bar.')
+        temp_results = Product.query.filter(Product.name.contains(search_query)).all()
+        temp_results += Product.query.filter(Product.manufacturer.contains(search_query)).all()
+        search_results = []
+        for t in temp_results:
+            if t not in search_results:
+                search_results.append(t)
+    return render_template('product_management/search_results_table.html', search_results=search_results)
+
+
+
+@app.route('/search_category', methods=['GET', 'POST'])
+def search_category():
+    if request.method == 'POST':
+        search_query = request.form['search-category-input']
+        if search_query == "":
+            return render_template('reuseable_components/error.html', page='Search',
+                                   error_message='Make sure to fill in the search bar.')
+        temp_results = Product.query.filter(Product.category.contains(search_query)).all()
+        search_results = []
+        for t in temp_results:
+            if t not in search_results:
+                search_results.append(t)
+    return render_template('product_management/search_results_table.html', search_results=search_results)
 
 # displays the calendar page
 # calendar uses the "full calendar" api
@@ -368,21 +392,7 @@ def admin_login():
                     return 'Admin does not exist'
         except:
             return "Error please contact Management"
-
     return render_template('/admin_management/admin_login.html')
-@app.route('/search_category', methods=['GET', 'POST'])
-def search():
-    if request.method == 'POST':
-        search_query = request.form['search-category-input']
-        if search_query == "":
-            return render_template('reusable_components/error.html', page='Search',
-                                   error_message='Make sure to fill in the search bar.')
-        temp_results = Product.query.filter(Product.category.contains(search_query)).all()
-        search_results = []
-        for t in temp_results:
-            if t not in search_results:
-                search_results.append(t)
-    return render_template('product_management/search_results_table.html', search_results=search_results)
 
 
 if __name__ == "__main__":
