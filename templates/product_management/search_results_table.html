@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% include 'reusable_components/head_tag_information.html' %}
+    <title>Login</title>
+</head>
+<body>
+    {% include 'reusable_components/navigation_bar.html' %}
+<div class="container">
+    <br>
+    <a href="/manage"><button class="btn btn-lg btn-primary" id="add-button">Back</button></a>
+    <div class="content text-center" id="search-table">
+        <br>
+        <h2>Search Results</h2>
+        {% if search_results|length < 1 %}
+            <h4 style="text-align: center">There are no items that match your search.</h4>
+        {% else %}
+        <table class="table">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Manufacturer</th>
+                <th>Category</th>
+                <th>Location</th>
+                <th>Quantity</th>
+                <th>Manage</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for s in search_results %}
+                <tr>
+                    <td>{{ s.id }}</td>
+                    <td>{{ s.name }}</td>
+                    <td>{{ s.manufacturer }}</td>
+                    <td>{{ s.category }}</td>
+                    <td>{{ s.location }}</td>
+                    <td>{{ s.quantity }}</td>
+                    <td>
+                        <a href="/manage/delete/{{s.id}}">Delete</a>
+                        <br>
+                        <a href="/manage/update/{{s.id}}">Update</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+</div>
+</body>
+</html>

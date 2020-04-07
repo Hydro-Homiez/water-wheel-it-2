@@ -1,4 +1,6 @@
-from flask import Flask, render_template, request, redirect, send_file, jsonify
+from flask import Flask, render_template, request, redirect, send_file, jsonify, session
+import datetime
+
 from flask_sqlalchemy import SQLAlchemy
 import json
 import barcode
@@ -13,6 +15,7 @@ from flask_login import UserMixin, LoginManager, current_user, login_user, logou
 import datetime
 
 app = Flask(__name__)
+app.secret_key = "super secret key"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
 
@@ -26,21 +29,24 @@ class User(db.Model, UserMixin):
     last_name = db.Column(db.String(200), nullable=False)
     password = db.Column(db.String(200), nullable=False)
     in_work = db.Column(db.Boolean, nullable=False)
-
+    location = db.Column(db.String(200), nullable=False)
 
     # added admin property to check if a user is an admin
     admin = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
-        return '<User: %r, %r, %r, %r, %r, %r, %r' % self.id % self.username % self.email % self.first_name % \
-               self.last_name % self.password % self.in_work
+        return '<User-id: ' + self.id + ', username: ' + self.username + ', email: ' + self.email + ', first name: ' + \
+                self.first_name + ', last name: ' + self.last_name + ', password: ' + self.password + ', in work: ' + \
+                self.in_work + ', location: ' + self.location + '>'
 
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
     manufacturer = db.Column(db.String(200), nullable=False)
+    category = db.Column(db.String(200), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
+    location = db.Column(db.String(200), nullable=False)
     # barcode is an added property that uses big integer
     # to store over 12 digits (minimum needed for the
     # barcode I selected
@@ -77,11 +83,6 @@ def profile():
     return render_template('/user_management/profile.html', user_list=users)
 
 
-@app.route('/overview')
-def overview():
-    return render_template('overview.html')
-
-
 @app.route('/time', methods=['POST', 'GET'])
 def time():
     if request.method == 'POST':
@@ -99,7 +100,8 @@ def time():
         try:
             db.session.commit()
         except:
-            print("Not commited")
+            return render_template('reusable_components/error.html', page='Clock-in',
+                                   error_message='Time not committed')
     work_times = WorkTime.query.order_by(WorkTime.current_time).all()
     return render_template('time/time.html', work_times=work_times)
 
@@ -112,26 +114,25 @@ def login():
         new_password = request.form['password-input']
 
         try:
-            name_found = False
-            password_found = False
             users = User.query.order_by(User.id).all()
             for user in users:
                 if new_username == user.username:
-                    name_found = True
                     if new_password == user.password:
-                        password_found_found = True
-                        # changed from original redirect to /profile
-                        return redirect('/')
+                        session['user_location'] = user.location
+                        return redirect('/login_success')
                     else:
-                        return 'Wrong password'
-                else:
-                    return 'User not exist'
-
+                        return render_template('reusable_components/error.html', page='Login',
+                                               error_message='Wrong Password')
         except:
-            return 'Error'
+            return render_template('reusable_components/error.html', page='Login',
+                                   error_message='User does not exist')
 
     return render_template('/user_management/login.html')
 
+@app.route('/logout')
+def logout():
+    session.pop('user_location', None)
+    return redirect('/login')
 
 @app.route('/new_user', methods=['POST', 'GET'])
 def new_user():
@@ -142,6 +143,8 @@ def new_user():
         new_first_name = request.form['first-name-input']
         new_last_name = request.form['last-name-input']
         new_password = request.form['password-input']
+        new_location = request.form['location-input']
+
 
         # checks if the admin code is correct to flag as admin, default code is set to 'admin'
         new_admin = request.form['admin-input']
@@ -151,24 +154,28 @@ def new_user():
             new_admin = 0
             
         new_user = User(id=new_id, username=new_username, email=new_email, first_name=new_first_name, 
-                        last_name=new_last_name, password=new_password, in_work=False, admin=new_admin)
+                        last_name=new_last_name, password=new_password, location=new_location, in_work=False, admin=new_admin)
 
         try:
-            db.session.add(new_user)
+            db.session.add(user)
             db.session.commit()
             # changed from redirect /profile to /login
             return redirect('/login')
         except:
-            users = User.query.order_by(User.id).all()
-            return 'There was an issue adding the new user: '
+            return render_template('reusable_components/error.html', page='Insertion',
+                                   error_message='There was an issue adding the new user ')
 
     return render_template('/user_management/new_user.html')
 
 
-@app.route('/forgot_password')
-def forgot_password():
-    return render_template('/user_management/forgot_password.html')
+@app.route('/login_success')
+def login_success():
+    return render_template('/user_management/login_success.html')
 
+
+@app.route('/login_fail')
+def login_fail():
+    return render_template('/user_management/login_fail.html')
 
 @app.route('/login_success')
 def login_success():
@@ -183,10 +190,12 @@ def login_fail():
 # Product Mangement Navigation
 @app.route('/manage', methods=['POST', 'GET'])
 def manage():
+    work_location = session.get('user_location', 'N/A')
     if request.method == 'POST':
         new_id = request.form['id-input']
         new_name = request.form['name-input']
         new_manufacturer = request.form['manufacturer-input']
+        new_category = request.form['category-input']
         new_quantity = request.form['quantity-input']
         # Use the primary unique ID to make unique barcodes
         b = int(new_id) + 100000000000
@@ -203,15 +212,18 @@ def manage():
         # Optional print statement
         print(f'filename: {filename}')
 
+        new_item = Product(id=new_id, name=new_name, manufacturer=new_manufacturer, category=new_category,
+                           quantity=new_quantity, location=work_location)
         try:
             db.session.add(new_item)
             db.session.commit()
             return redirect('/manage')
         except:
-            return 'There was an issue adding your product'
+            return render_template('reusable_components/error.html', page='Insertion',
+                                   error_message='There was an issue adding your product')
 
     else:
-        products = Product.query.order_by(Product.id).all()
+        products = Product.query.filter_by(location=work_location).order_by(Product.id).all()
         return render_template('/product_management/manage.html', products=products)
 
 
@@ -234,17 +246,19 @@ def delete(id):
         db.session.commit()
         return redirect('/manage')
     except:
-        return 'There was a problem deleting that product'
+        return render_template('reusable_components/error.html', page='Deletion',
+                               error_message='There was a problem deleting that product')
 
 
 @app.route('/manage/update/<int:id>', methods=['GET', 'POST'])
 def update(id):
     product = Product.query.get_or_404(id)
+    print(f'product {product.name}')
 
     if request.method == 'POST':
-        product.id = request.form['id-input']
         product.name = request.form['name-input']
         product.manufacturer = request.form['manufacturer-input']
+        product.category = request.form['category-input']
         product.quantity = request.form['quantity-input']
 
         # added barcode func
@@ -254,7 +268,8 @@ def update(id):
             db.session.commit()
             return redirect('/manage')
         except:
-            return 'There was an issue updating your task'
+            return render_template('reusable_components/error.html', page='Update',
+                                   error_message='There was an issue updating your task')
 
     else:
         return render_template('product_management/update.html', product=product)
@@ -355,6 +370,19 @@ def admin_login():
             return "Error please contact Management"
 
     return render_template('/admin_management/admin_login.html')
+@app.route('/search_category', methods=['GET', 'POST'])
+def search():
+    if request.method == 'POST':
+        search_query = request.form['search-category-input']
+        if search_query == "":
+            return render_template('reusable_components/error.html', page='Search',
+                                   error_message='Make sure to fill in the search bar.')
+        temp_results = Product.query.filter(Product.category.contains(search_query)).all()
+        search_results = []
+        for t in temp_results:
+            if t not in search_results:
+                search_results.append(t)
+    return render_template('product_management/search_results_table.html', search_results=search_results)
 
 
 if __name__ == "__main__":

@@ -1,35 +1,82 @@
 <!DOCTYPE html>
 <html>
 <head>
-    {% include 'reuseable_components/head_tag_information.html' %}
+    {% include 'reusable_components/head_tag_information.html' %}
     <title>Login</title>
 </head>
 <body>
-    {% include 'reuseable_components/navigation_bar.html' %}
+    {% include 'reusable_components/navigation_bar.html' %}
+    <br>
+    <button class="btn btn-lg btn-primary float-right" id="search-category-button" onclick="search_category()"  style="margin-left:10px;margin-right:40px;">Search By Category</button>
+    <button class="btn btn-lg btn-primary float-right" id="search-button" onclick="search_product()"  style="margin-left:10px;">Search</button>
+    <button class="btn btn-lg btn-primary float-right" id="add-button" onclick="add_product()">Add</button>
     <div class="container">
         <br>
-        <form action="/manage" method="POST">
-            <h3>Add Product</h3>
-            <br>
-            <div class="form-label-group">
-                <input class="form-control" type="text" name="id-input" placeholder="ID of Product">
-            </div>
-            <br>
-            <div class="form-label-group">
-                <input class="form-control" type="text" name="name-input" placeholder="Name of Product">
-            </div>
-            <br>
-            <div class="form-label-group">
-                <input class="form-control" type="text" name="manufacturer-input" placeholder="Name of Manufacturer">
-            </div>
-            <br>
-            <div class="form-label-group">
-                <input class="form-control" type="text" name="quantity-input" placeholder="Quantity">
-            </div>
-            <br>
-            <input class="btn btn-lg btn-primary" type="submit" value="Add Item">
-        </form>
-        <div class="content text-center">
+        <div id="search-category-section" style="display:none;">
+                <br>
+                    <h3>Search Products By Category</h3>
+                <br>
+               <div class="form-group">
+                   <form action="/search_category" method="POST">
+                       <select class="form-control" name="search-category-input">
+                           <option disabled selected value>Select a category</option>
+                           <option value="Food">Food</option>
+                           <option value="Electronics">Electronics</option>
+                           <option value="Apparel">Apparel</option>
+                           <option value="Supplies">Supplies</option>
+                       </select>
+                       <br>
+                       <input class="btn btn-lg btn-primary" type="submit" value="Search">
+                   </form>
+               </div>
+        </div>
+        <div id="search-product-section" style="display:none;">
+            <form action="/search" method="POST">
+                <br>
+                <h3>Search Products</h3>
+                <br>
+                <div class="form-label-group">
+                    <input class="form-control" type="text" name="search-input" placeholder="Search">
+                </div>
+                <br>
+                <input class="btn btn-lg btn-primary" type="submit" value="Search">
+            </form>
+        </div>
+        <div id="add-product-section" style="display:none;">
+            <form action="/manage" method="POST">
+                <br>
+                <h3>Add Product</h3>
+                <br>
+                <div class="form-label-group">
+                    <input class="form-control" type="text" name="id-input" placeholder="ID of Product">
+                </div>
+                <br>
+                <div class="form-label-group">
+                    <input class="form-control" type="text" name="name-input" placeholder="Name of Product">
+                </div>
+                <br>
+                <div class="form-label-group">
+                    <input class="form-control" type="text" name="manufacturer-input" placeholder="Name of Manufacturer">
+                </div>
+                <br>
+                <div class="form-label-group">
+                    <input class="form-control" type="text" name="quantity-input" placeholder="Quantity">
+                </div>
+                <br>
+                <div class="form-group">
+                    <select class="form-control" name="category-input">
+                        <option disabled selected value>Select a category</option>
+                        <option value="Food">Food</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Apparel">Apparel</option>
+                        <option value="Supplies">Supplies</option>
+                    </select>
+                </div>
+                <br>
+                <input class="btn btn-lg btn-primary" type="submit" value="Add Item">
+            </form>
+        </div>
+        <div class="content text-center" id="product-table">
             <br>
             <h2>Product Table</h2>
             {% if products|length < 1 %}
@@ -41,6 +88,7 @@
                     <th>ID</th>
                     <th>Name</th>
                     <th>Manufacturer</th>
+                    <th>Category</th>
                     <th>Quantity</th>
                     <th>Manage</th>
                 </tr>
@@ -51,6 +99,7 @@
                         <td>{{ product.id }}</td>
                         <td>{{ product.name }}</td>
                         <td>{{ product.manufacturer }}</td>
+                        <td>{{ product.category }}</td>
                         <td>{{ product.quantity }}</td>
                         <td>
                             <a href="/manage/delete/{{product.id}}">Delete</a>
@@ -64,5 +113,47 @@
             {% endif %}
         </div>
     </div>
+    <script>
+        function add_product() {
+            document.getElementById("add-product-section").style.display = "initial";
+            document.getElementById("add-button").innerHTML = "X";
+            document.getElementById("add-button").style.marginRight = "40px";
+            document.getElementById("add-button").setAttribute("onclick", "reset_buttons()");
+            document.getElementById("search-button").style.display = "none";
+            document.getElementById("search-category-button").style.display = "none";
+        }
+        function search_product() {
+            document.getElementById("search-product-section").style.display = "initial";
+            document.getElementById("search-button").innerHTML = "X";
+            document.getElementById("search-button").setAttribute("onclick", "reset_buttons()");
+            document.getElementById("add-button").style.display = "none";
+            document.getElementById("search-category-button").style.display = "none";
+            document.getElementById("product-table").style.display="none";
+        }
+        function search_category() {
+            document.getElementById("search-category-section").style.display = "initial";
+            document.getElementById("search-category-button").innerHTML = "X";
+            document.getElementById("search-category-button").setAttribute("onclick", "reset_buttons()");
+            document.getElementById("add-button").style.display = "none";
+            document.getElementById("search-button").style.display = "none";
+            document.getElementById("product-table").style.display="none";
+        }
+        function reset_buttons() {
+            document.getElementById("add-product-section").style.display = "none";
+            document.getElementById("search-product-section").style.display = "none";
+            document.getElementById("search-category-section").style.display = "none";
+            document.getElementById("add-button").innerHTML = "Add";
+            document.getElementById("add-button").style.display = "initial";
+            document.getElementById("add-button").style.marginRight = "0px";
+            document.getElementById("add-button").setAttribute("onclick", "add_product()");
+            document.getElementById("search-button").innerHTML = "Search";
+            document.getElementById("search-button").style.display = "initial";
+            document.getElementById("search-button").setAttribute("onclick", "search_product()");
+            document.getElementById("search-category-button").innerHTML = "Search By Category";
+            document.getElementById("search-category-button").style.display = "initial";
+            document.getElementById("search-button").setAttribute("onclick", "search_category()");
+            document.getElementById("product-table").style.display="initial";
+        }
+    </script>
 </body>
 </html>
