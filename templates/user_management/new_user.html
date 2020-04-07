@@ -25,17 +25,19 @@
    <h1>New User</h1>
 	<form action="/new_user" method="POST">
 		<p>Employee ID:</p>
-		<input type="text" name="id-input">
+		<input type="text" name="id-input" required>
 		<p>Username:</p>
-		<input type="text" name="username-input">
+		<input type="text" name="username-input" required>
 		<p>Email:</p>
-		<input type="text" name="email-input">
+		<input type="text" name="email-input" required>
 		<p>First Name:</p>
-		<input type="text" name="first-name-input">
+		<input type="text" name="first-name-input" required>
 		<p>Last Name:</p>
-		<input type="text" name="last-name-input">
+		<input type="text" name="last-name-input" required>
 		<p>Password: </p>
-		<input type="password" name="password-input">
+		<input type="password" name="password-input" required>
+		<p>If Applicable Admin Code: </p>
+		<input type="password" name="admin-input" placeholder="Manager's Code Required">
 		<br><br>
 		<input type="submit" value="Sign up">
 		<br>

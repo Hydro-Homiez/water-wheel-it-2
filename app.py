@@ -87,8 +87,16 @@ def new_user():
         new_first_name = request.form['first-name-input']
         new_last_name = request.form['last-name-input']
         new_password = request.form['password-input']
+
+        # checks if the admin code is correct to flag as admin, default code is set to 'admin'
+        new_admin = request.form['admin-input']
+        if new_admin == 'admin':
+            new_admin = 1
+        else:
+            new_admin = 0
+            
         new_user = User(id=new_id, username=new_username, email=new_email, first_name=new_first_name
-                        , last_name=new_last_name, password=new_password)
+                        , last_name=new_last_name, password=new_password, admin=new_admin)
 
         try:
             db.session.add(new_user)
