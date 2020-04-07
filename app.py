@@ -154,7 +154,7 @@ def new_user():
                         last_name=new_last_name, password=new_password, in_work=False, admin=new_admin)
 
         try:
-            db.session.add(new_user_obj)
+            db.session.add(new_user)
             db.session.commit()
             # changed from redirect /profile to /login
             return redirect('/login')
