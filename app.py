@@ -14,6 +14,8 @@ from flask_login import UserMixin, LoginManager, current_user, login_user, logou
 
 import datetime
 
+from sqlalchemy import desc
+
 app = Flask(__name__)
 app.secret_key = "super secret key"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
@@ -34,11 +36,6 @@ class User(db.Model, UserMixin):
     # added admin property to check if a user is an admin
     admin = db.Column(db.Boolean, default=False)
 
-    def __repr__(self):
-        return '<User-id: ' + self.id + ', username: ' + self.username + ', email: ' + self.email + ', first name: ' + \
-                self.first_name + ', last name: ' + self.last_name + ', password: ' + self.password + ', in work: ' + \
-                self.in_work + ', location: ' + self.location + '>'
-
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -52,9 +49,6 @@ class Product(db.Model):
     # barcode I selected
     barcode = db.Column(db.BigInteger)
 
-    def __repr__(self):
-        return '<Product: %r, %r, %r, %r>' % self.id % self.name % self.manufacturer % self.quantity % self.barcode
-
 
 class WorkTime(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -63,6 +57,15 @@ class WorkTime(db.Model):
     employee_last_name = db.Column(db.Integer, db.ForeignKey('user.last_name'), nullable=False)
     current_time = db.Column(db.DateTime, nullable=False)
     in_work = db.Column(db.Boolean, db.ForeignKey('user.in_work'), nullable=False)
+
+
+class ActionRecord(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    employee_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    employee_first_name = db.Column(db.String, db.ForeignKey('user.first_name'))
+    employee_last_name = db.Column(db.String, db.ForeignKey('user.last_name'))
+    action = db.Column(db.String(200), nullable=False)
+    current_time = db.Column(db.DateTime, nullable=False)
 
 
 # Page Routing
@@ -83,6 +86,7 @@ def profile():
     return render_template('/user_management/profile.html', user_list=users)
 
 
+# Clock-in system
 @app.route('/time', methods=['POST', 'GET'])
 def time():
     if request.method == 'POST':
@@ -118,7 +122,11 @@ def login():
             for user in users:
                 if new_username == user.username:
                     if new_password == user.password:
+                        session['user_id'] = user.id
+                        session['user_first_name'] = user.first_name
+                        session['user_last_name'] = user.last_name
                         session['user_location'] = user.location
+                        session['user_admin'] = user.admin
                         return redirect('/login_success')
                     else:
                         return render_template('reuseable_components/error.html', page='Login',
@@ -132,7 +140,11 @@ def login():
 
 @app.route('/logout')
 def logout():
+    session.pop('user_id', None)
+    session.pop('user_first_name', None)
+    session.pop('user_last_name', None)
     session.pop('user_location', None)
+    session.pop('user_admin', None)
     return redirect('/login')
 
 
@@ -183,6 +195,10 @@ def login_fail():
 # Product Mangement Navigation
 @app.route('/manage', methods=['POST', 'GET'])
 def manage():
+    current_time = datetime.datetime.now().replace(microsecond=0)
+    employee_id = session.get('user_id', 'N/A')
+    first_name = session.get('user_first_name', 'N/A')
+    last_name = session.get('user_last_name', 'N/A')
     work_location = session.get('user_location', 'N/A')
     if request.method == 'POST':
         new_id = request.form['id-input']
@@ -207,8 +223,12 @@ def manage():
 
         new_item = Product(id=new_id, name=new_name, manufacturer=new_manufacturer, category=new_category,
                            quantity=new_quantity, location=work_location, barcode=b)
+
+        action_record = ActionRecord(id=employee_id, employee_first_name=first_name, employee_last_name=last_name,
+                                     action="Added product", current_time=current_time)
         try:
             db.session.add(new_item)
+            db.session.add(action_record)
             db.session.commit()
             return redirect('/manage')
         except:
@@ -232,10 +252,16 @@ def download(id):
 
 @app.route('/manage/delete/<int:id>')
 def delete(id):
+    current_time = datetime.datetime.now().replace(microsecond=0)
+    employee_id = session.get('user_id', 'N/A')
+    first_name = session.get('user_first_name', 'N/A')
+    last_name = session.get('user_last_name', 'N/A')
     product_to_delete = Product.query.get_or_404(id)
-
+    action_record = ActionRecord(employee_id=employee_id, employee_first_name=first_name, employee_last_name=last_name,
+                                 action="Deleted product", current_time=current_time)
     try:
         db.session.delete(product_to_delete)
+        db.session.add(action_record)
         db.session.commit()
         return redirect('/manage')
     except:
@@ -245,19 +271,22 @@ def delete(id):
 
 @app.route('/manage/update/<int:id>', methods=['GET', 'POST'])
 def update(id):
+    current_time = datetime.datetime.now().replace(microsecond=0)
+    employee_id = session.get('user_id', 'N/A')
+    first_name = session.get('user_first_name', 'N/A')
+    last_name = session.get('user_last_name', 'N/A')
     product = Product.query.get_or_404(id)
-    print(f'product {product.name}')
 
     if request.method == 'POST':
+        print("POST")
         product.name = request.form['name-input']
         product.manufacturer = request.form['manufacturer-input']
-        product.category = request.form['category-input']
         product.quantity = request.form['quantity-input']
 
-        # added barcode func
-        product.barcode = request.form['barcode-input']
-
+        action_record = ActionRecord(employee_id=employee_id, employee_first_name=first_name, employee_last_name=last_name,
+                                     action="Updated product", current_time=current_time)
         try:
+            db.session.add(action_record)
             db.session.commit()
             return redirect('/manage')
         except:
@@ -284,7 +313,6 @@ def search():
     return render_template('product_management/search_results_table.html', search_results=search_results)
 
 
-
 @app.route('/search_category', methods=['GET', 'POST'])
 def search_category():
     if request.method == 'POST':
@@ -298,6 +326,7 @@ def search_category():
             if t not in search_results:
                 search_results.append(t)
     return render_template('product_management/search_results_table.html', search_results=search_results)
+
 
 # displays the calendar page
 # calendar uses the "full calendar" api
@@ -365,6 +394,10 @@ admin.add_view(HomepageRedirect(name="Return to Homepage"))
 # Admin must login in order to view the page, admin is authenticated upon successful login
 @app.route('/admin-login', methods=['POST', 'GET'])
 def admin_login():
+    current_time = datetime.datetime.now().replace(microsecond=0)
+    employee_id = session.get('user_id', 'N/A')
+    first_name = session.get('user_first_name', 'N/A')
+    last_name = session.get('user_last_name', 'N/A')
     if current_user.is_authenticated is True:
         return redirect('/admin')
     elif request.method == 'POST':
@@ -382,6 +415,11 @@ def admin_login():
                     if new_password == user.password:
                         password_found = True
                         if user.admin is True:
+                            action_record = ActionRecord(employee_id=employee_id, employee_first_name=first_name,
+                                                         employee_last_name=last_name,
+                                                         action="Accessed admin page", current_time=current_time)
+                            db.session.add(action_record)
+                            db.session.commit()
                             login_user(user)
                             return redirect('/admin')
                         else:
@@ -394,6 +432,18 @@ def admin_login():
         except:
             return "Error please contact Management"
     return render_template('/admin_management/admin_login.html')
+
+
+# Activity Records
+@app.route('/activity', methods=['GET'])
+def activity_records():
+    is_admin = session.get('user_admin', 'N/A')
+    if is_admin:
+        records = ActionRecord.query.order_by(desc(ActionRecord.current_time)).all()
+        return render_template("activity_record.html", activity_records=records)
+    else:
+        return render_template('reuseable_components/error.html', page='Activity Record',
+                               error_message='Only admins can access this page.')
 
 
 if __name__ == "__main__":

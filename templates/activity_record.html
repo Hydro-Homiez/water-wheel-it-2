@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% include 'reuseable_components/head_tag_information.html' %}
+    <title>Overview</title>
+</head>
+<body>
+    {% include 'reuseable_components/navigation_bar.html' %}
+    <div class="container">
+        <br>
+        <div class="content">
+            <h1>Activity Records</h1>
+            <div>
+                {% if activity_records|length < 1 %}
+                    <h4 style="text-align: center">There is no activity currently recorded.</h4>
+                {% else %}
+                    <br>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Employee ID</th>
+                                <th>Name</th>
+                                <th>Action</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in activity_records %}
+                                <tr>
+                                    <td>{{ t.employee_id }}</td>
+                                    <td>{{ t.employee_first_name }} {{ t.employee_last_name }}</td>
+                                    <td>{{ t.action }}</td>
+                                    <td>{{ t.current_time }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
