@@ -8,3 +8,34 @@
     <a href="/logout" class="w3-button w3-bar-item">Log Out</a>
     <a href="/about" class="w3-button w3-bar-item">About</a>
 </nav>
+{% if session.get('low_stock') %}
+<div class="modal fade bd-example-modal-lg" id="notification" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Products Low in Stock</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>The following products are low: </p>
+            {% for p in session['low_stock'] %}
+            <ul>
+                <li>{{ p }}</li>
+            </ul>
+            {% endfor %}
+          <a href="/manage" class="btn btn-primary">View</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+<script type="text/javascript">
+    $(window).on('load',function(){
+        $('#notification').modal('show');
+    });
+        {{ session.pop('low_stock', '')|safe }}
+</script>
+<script>
+</script>

@@ -5,7 +5,16 @@
     <title>Login</title>
 </head>
 <body>
-    {% include 'reuseable_components/navigation_bar.html' %}
+    <nav class="w3-bar w3-blue">
+        <a href="/" class="w3-button w3-bar-item">Home</a>
+        <a href="/login" class="w3-button w3-bar-item">Login</a>
+        <a href="/manage" class="w3-button w3-bar-item">Database</a>
+        <a href="/time" class="w3-button w3-bar-item">Clock-in</a>
+        <a href="/calendar" class="w3-button w3-bar-item">Calendar</a>
+        <a href="/admin-login" class="w3-button w3-bar-item">Admin</a>
+        <a href="/logout" class="w3-button w3-bar-item">Log Out</a>
+        <a href="/about" class="w3-button w3-bar-item">About</a>
+    </nav>
     <br>
     <button class="btn btn-lg btn-primary float-right" id="search-category-button" onclick="search_category()"  style="margin-left:10px;margin-right:40px;">Search By Category</button>
     <button class="btn btn-lg btn-primary float-right" id="search-button" onclick="search_product()"  style="margin-left:10px;">Search</button>
@@ -61,6 +70,10 @@
                 <br>
                 <div class="form-label-group">
                     <input class="form-control" type="text" name="quantity-input" placeholder="Quantity">
+                </div>
+                <br>
+                <div class="form-label-group">
+                    <input class="form-control" type="text" name="notify-input" placeholder="Amount for Low Quantity Notification">
                 </div>
                 <br>
                 <div class="form-group">
