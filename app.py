@@ -149,26 +149,29 @@ def logout():
 @app.route('/new_user', methods=['POST', 'GET'])
 def new_user():
     if request.method == 'POST':
-        new_id = request.form['id-input']
-        new_username = request.form['username-input']
-        new_email = request.form['email-input']
-        new_first_name = request.form['first-name-input']
-        new_last_name = request.form['last-name-input']
-        new_password = request.form['password-input']
-        new_location = request.form['location-input']
+        new_id = request.form.get('id-input', None)
+        new_username = request.form.get('username-input', None)
+        new_email = request.form.get('email-input', None)
+        new_first_name = request.form.get('first-name-input', None)
+        new_last_name = request.form.get('last-name-input', None)
+        new_password = request.form.get('password-input', None)
+        new_location = request.form.get('location-input', None)
+        if new_id is None or new_username is None or new_email is None or new_first_name is None or \
+                new_last_name is None or new_password is None or new_location is None:
+            return render_template('reuseable_components/error.html', page='Insertion',
+                                   error_message='There was an issue updating your task')
 
         # checks if the admin code is correct to flag as admin, default code is set to 'admin'
-        new_admin = request.form['admin-input']
+        new_admin = request.form.get('admin-input')
         if new_admin == 'admin':
             new_admin = 1
         else:
             new_admin = 0
-            
-        new_user = User(id=new_id, username=new_username, email=new_email, first_name=new_first_name,
-                        last_name=new_last_name, password=new_password, location=new_location, in_work=False,
-                        admin=new_admin)
 
         try:
+            new_user = User(id=new_id, username=new_username, email=new_email, first_name=new_first_name,
+                            last_name=new_last_name, password=new_password, location=new_location, in_work=False,
+                            admin=new_admin)
             db.session.add(new_user)
             db.session.commit()
             # changed from redirect /profile to /login
@@ -200,36 +203,34 @@ def manage():
     last_name = session.get('user_last_name', 'N/A')
     work_location = session.get('user_location', 'N/A')
     if request.method == 'POST':
-        new_id = request.form['id-input']
-        new_name = request.form['name-input']
-        new_manufacturer = request.form['manufacturer-input']
-        new_category = request.form['category-input']
-        new_quantity = request.form['quantity-input']
-        if request.form['notify-input'] is '':
+        new_id = request.form.get('id-input', None)
+        new_name = request.form.get('name-input', None)
+        new_manufacturer = request.form.get('manufacturer-input', None)
+        new_category = request.form.get('category-input', None)
+        new_quantity = request.form.get('quantity-input', None)
+        if new_id is None or new_name is None or new_manufacturer is None or new_category is None or \
+                new_quantity is None:
+            return render_template('reuseable_components/error.html', page='Insertion',
+                                   error_message='There was an issue adding your product')
+        if request.form['notify-input'] == '':
             new_minimum = round(new_quantity * .1)
         else:
-            new_minimum = request.form['notify-input']
+            new_minimum = request.form.get('notify-input')
         # Use the primary unique ID to make unique barcodes
         b = int(new_id) + 100000000000
-        # Set the new product barcode to the b variable above
-        new_item = Product(id=new_id, name=new_name, manufacturer=new_manufacturer
-                           , quantity=new_quantity, barcode=b)
         # Uses the ean13 barcode format to incorporate the b variable
         ean = barcode.get('ean13', str(b))
-        # Optional print statement to see process
-        print(f'code: {ean.get_fullcode()}')
         # The file is saved by using the unique primary ID of
         # the product to easily obtain the file
-        filename = ean.save(new_id)
-        # Optional print statement
-        print(f'filename: {filename}')
+        ean.save(new_id)
 
-        new_item = Product(id=new_id, name=new_name, manufacturer=new_manufacturer, category=new_category,
-                           quantity=new_quantity, location=work_location, barcode=b, notify_minimum=new_minimum)
-
-        action_record = ActionRecord(employee_id=employee_id, employee_first_name=first_name, employee_last_name=last_name,
-                                     action="Added product", current_time=current_time)
         try:
+            new_item = Product(id=new_id, name=new_name, manufacturer=new_manufacturer, category=new_category,
+                               quantity=new_quantity, location=work_location, barcode=b, notify_minimum=new_minimum)
+
+            action_record = ActionRecord(employee_id=employee_id, employee_first_name=first_name,
+                                         employee_last_name=last_name, action="Added product",
+                                         current_time=current_time)
             db.session.add(new_item)
             db.session.add(action_record)
             db.session.commit()
@@ -287,14 +288,15 @@ def update(id):
     product = Product.query.get_or_404(id)
 
     if request.method == 'POST':
-        print("POST")
-        product.name = request.form['name-input']
-        product.manufacturer = request.form['manufacturer-input']
-        product.quantity = request.form['quantity-input']
-        if request.form['notify-input'] is '':
-            product.notify_minimum = round(product.quantity * .1)
-        else:
-            product.notify_minimum = request.form['notify-input']
+        new_name = request.form.get('name-input', None)
+        new_manufacturer = request.form.get('manufacturer-input', None)
+        new_quantity = request.form.get('quantity-input', None)
+        if new_name is None or new_manufacturer is None or new_quantity is None:
+            return render_template('reuseable_components/error.html', page='Insertion',
+                                   error_message='There was an issue adding your product')
+        product.name = new_name
+        product.manufacturer = new_manufacturer
+        product.quantity = new_quantity
 
         action_record = ActionRecord(employee_id=employee_id, employee_first_name=first_name, employee_last_name=last_name,
                                      action="Updated product", current_time=current_time)
@@ -346,6 +348,13 @@ def search_category():
 @app.route('/calendar')
 def calendar():
     return render_template("calendar.html")
+
+
+# Graphs page
+@app.route('/graphs')
+def graphs():
+    products = Product.query.order_by(Product.quantity).all()
+    return render_template("graphs.html", products=products)
 
 
 # This is used so that users can input events into the calender using the 'events.json'
