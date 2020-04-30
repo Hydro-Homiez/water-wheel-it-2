@@ -353,7 +353,8 @@ def calendar():
 # Graphs page
 @app.route('/graphs')
 def graphs():
-    products = Product.query.order_by(Product.quantity).all()
+    work_location = session.get('user_location', 'N/A')
+    products = Product.query.filter_by(location=work_location).order_by(Product.quantity).all()
     return render_template("graphs.html", products=products)
 
 
