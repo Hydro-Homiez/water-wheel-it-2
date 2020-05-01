@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, send_file, jsonify, session, make_response, Response
+from flask import Flask, render_template, request, redirect, send_file, jsonify, session, Response
 from flask_sqlalchemy import SQLAlchemy
 import json
 import barcode
@@ -14,7 +14,6 @@ import datetime
 
 # for export feature import these
 import csv
-from io import BytesIO
 
 app = Flask(__name__)
 app.secret_key = "super secret key"
