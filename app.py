@@ -44,10 +44,8 @@ class Product(db.Model):
     category = db.Column(db.String(200), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     location = db.Column(db.String(200), nullable=False)
-    # barcode is an added property that uses big integer
-    # to store over 12 digits (minimum needed for the
-    # barcode I selected
     barcode = db.Column(db.BigInteger)
+    notify_minimum = db.Column(db.Integer)
 
 
 class WorkTime(db.Model):
@@ -80,7 +78,7 @@ def about():
     return render_template('about.html')
 
 
-@app.route('/profile', )
+@app.route('/profile')
 def profile():
     users = User.query.order_by(User.id).all()
     return render_template('/user_management/profile.html', user_list=users)
@@ -195,6 +193,7 @@ def login_fail():
 # Product Mangement Navigation
 @app.route('/manage', methods=['POST', 'GET'])
 def manage():
+    session.pop('low_stock', None)
     current_time = datetime.datetime.now().replace(microsecond=0)
     employee_id = session.get('user_id', 'N/A')
     first_name = session.get('user_first_name', 'N/A')
@@ -206,6 +205,10 @@ def manage():
         new_manufacturer = request.form['manufacturer-input']
         new_category = request.form['category-input']
         new_quantity = request.form['quantity-input']
+        if request.form['notify-input'] is '':
+            new_minimum = round(new_quantity * .1)
+        else:
+            new_minimum = request.form['notify-input']
         # Use the primary unique ID to make unique barcodes
         b = int(new_id) + 100000000000
         # Set the new product barcode to the b variable above
@@ -222,9 +225,9 @@ def manage():
         print(f'filename: {filename}')
 
         new_item = Product(id=new_id, name=new_name, manufacturer=new_manufacturer, category=new_category,
-                           quantity=new_quantity, location=work_location, barcode=b)
+                           quantity=new_quantity, location=work_location, barcode=b, notify_minimum=new_minimum)
 
-        action_record = ActionRecord(id=employee_id, employee_first_name=first_name, employee_last_name=last_name,
+        action_record = ActionRecord(employee_id=employee_id, employee_first_name=first_name, employee_last_name=last_name,
                                      action="Added product", current_time=current_time)
         try:
             db.session.add(new_item)
@@ -237,6 +240,12 @@ def manage():
 
     else:
         products = Product.query.filter_by(location=work_location).order_by(Product.id).all()
+        low_stock = []
+        for p in products:
+            if p.quantity < p.notify_minimum:
+                low_stock.append(p.name)
+                print(p.name)
+        session['low_stock'] = low_stock
         return render_template('/product_management/manage.html', products=products)
 
 
@@ -282,6 +291,10 @@ def update(id):
         product.name = request.form['name-input']
         product.manufacturer = request.form['manufacturer-input']
         product.quantity = request.form['quantity-input']
+        if request.form['notify-input'] is '':
+            product.notify_minimum = round(product.quantity * .1)
+        else:
+            product.notify_minimum = request.form['notify-input']
 
         action_record = ActionRecord(employee_id=employee_id, employee_first_name=first_name, employee_last_name=last_name,
                                      action="Updated product", current_time=current_time)
