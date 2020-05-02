@@ -10,7 +10,7 @@
         <br>
         <div class="col-md">
             <h1>Update Product</h1>
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 <br>
                 <div class="form-label-group">
                     <input class="form-control" type="text" name="name-input" value="{{ product.name }}">
@@ -25,12 +25,22 @@
                 </div>
                 <br>
                 <div class="form-label-group">
-                    <input class="form-control" type="text" name="notify-input" placeholder="Amount for Low Quantity Notification">
+                    <input class="form-control" type="text" name="notify-input" placeholder="Amount for Low Quantity Notification" value="{{ product.notify_minimum }}">
                 </div>
                 <br>
+                <div class="custom-file">
+                    <input class="customfile-input" name="files" type="file" id="image-input">
+                    <label class="custom-file-label text-left" for="image-input">Change File</label>
+                </div>
+                <br><br>
                 <input class="btn btn-lg btn-primary" type="submit" value="Update">
             </form>
         </div>
     </div>
+    <script>
+        $('input[type="file"]').change(function(e){
+            $('.custom-file-label').html(e.target.files[0].name);
+        });
+    </script>
 </body>
 </html>

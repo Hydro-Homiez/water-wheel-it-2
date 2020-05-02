@@ -1,4 +1,5 @@
-*.svg
+static/images/products
+static/images/barcodes
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
