@@ -10,37 +10,37 @@
         <br>
         <div class="col-md">
             <h1>Update Product</h1>
-            <form action="/update/{{product.id}}" method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 <br>
                 <div class="form-label-group">
-                    <input class="form-control" type="text" name="id-input" placeholder="Product ID">
-                </div>
-                <br>
-                <div class="form-label-group">
-                    <input class="form-control" type="text" name="name-input" placeholder="Name of Product">
+                    <input class="form-control" type="text" name="name-input" value="{{ product.name }}">
                 </div>
                 <br>
                 <div class="form-label-group">
-                    <input class="form-control" type="text" name="manufacturer-input" placeholder="Name of Manufacturer">
+                    <input class="form-control" type="text" name="manufacturer-input" value="{{ product.manufacturer }}">
                 </div>
                 <br>
                 <div class="form-label-group">
-                    <input class="form-control" type="text" name="quantity-input" placeholder="Quantity">
+                    <input class="form-control" type="text" name="quantity-input" value="{{ product.quantity }}">
                 </div>
                 <br>
-                <div class="form-group">
-                    <select class="form-control" name="category-input">
-                        <option disabled selected value>Select a category</option>
-                        <option value="Food">Food</option>
-                        <option value="Electronics">Electronics</option>
-                        <option value="Apparel">Apparel</option>
-                        <option value="Supplies">House Supplies</option>
-                    </select>
+                <div class="form-label-group">
+                    <input class="form-control" type="text" name="notify-input" placeholder="Amount for Low Quantity Notification" value="{{ product.notify_minimum }}">
                 </div>
                 <br>
+                <div class="custom-file">
+                    <input class="customfile-input" name="files" type="file" id="image-input">
+                    <label class="custom-file-label text-left" for="image-input">Change File</label>
+                </div>
+                <br><br>
                 <input class="btn btn-lg btn-primary" type="submit" value="Update">
             </form>
         </div>
     </div>
+    <script>
+        $('input[type="file"]').change(function(e){
+            $('.custom-file-label').html(e.target.files[0].name);
+        });
+    </script>
 </body>
 </html>
