@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% include 'reuseable_components/head_tag_information.html' %}
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
+    <title>Product Graphs</title>
+</head>
+<body>
+    {% include 'reuseable_components/navigation_bar.html' %}
+    <br>
+    <div class="container">
+        <div class="col text-center">
+            <h2>Quantity of Products</h2>
+            <canvas id="chart" width="600" height="400"></canvas>
+        </div>
+    </div>
+    <script>
+      // bar chart data
+      var barData = {
+        labels : [
+          {% for product in products %}
+           "{{ product.name }}",
+          {% endfor %}
+	    ],
+
+        datasets : [{
+          fillColor: "rgba(151,187,205,0.2)",
+          strokeColor: "rgba(151,187,205,1)",
+          pointColor: "rgba(151,187,205,1)",
+          data : [
+            {% for product in products %}
+               {{ product.quantity }},
+              {% endfor %}
+	    ]
+          }
+        ]
+      }
+
+     // get bar chart canvas
+     var mychart = document.getElementById("chart").getContext("2d");
+
+     new Chart(mychart).Bar(barData, {
+       scaleStartValue: 0,
+       scaleShowGridLines : true,
+       barShowStroke : true,
+       scaleShowLabels: true
+       }
+     );
+    </script>
+</body>
+</html>
