@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, send_file, jsonify, session
+from flask import Flask, render_template, request, redirect, send_from_directory, jsonify, session
 import datetime
 
 from flask_sqlalchemy import SQLAlchemy
@@ -14,7 +14,11 @@ from flask_login import UserMixin, LoginManager, current_user, login_user, logou
 
 import datetime
 
+import os
+
 from sqlalchemy import desc
+
+APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 app = Flask(__name__)
 app.secret_key = "super secret key"
@@ -22,7 +26,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
 
 
-# changed id column to Integer
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(200), nullable=False)
@@ -32,8 +35,6 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(200), nullable=False)
     in_work = db.Column(db.Boolean, nullable=False)
     location = db.Column(db.String(200), nullable=False)
-
-    # added admin property to check if a user is an admin
     admin = db.Column(db.Boolean, default=False)
 
 
@@ -46,6 +47,8 @@ class Product(db.Model):
     location = db.Column(db.String(200), nullable=False)
     barcode = db.Column(db.BigInteger)
     notify_minimum = db.Column(db.Integer)
+    image_name = db.Column(db.String(200), nullable=False)
+    image_type = db.Column(db.String(200), nullable=False)
 
 
 class WorkTime(db.Model):
@@ -208,25 +211,49 @@ def manage():
         new_manufacturer = request.form.get('manufacturer-input', None)
         new_category = request.form.get('category-input', None)
         new_quantity = request.form.get('quantity-input', None)
+        new_image = ''
+        if 'files' in request.files:
+            folder_name = os.path.join(APP_ROOT, 'static\\images\\products')
+            if not os.path.isdir(folder_name):
+                pass
+            uploaded_files = request.files.get('files')
+            file_name = uploaded_files.filename
+            if file_name == '':
+                new_image = ''
+                image_type = ''
+            else:
+                extension = file_name[file_name.index('.'):len(file_name)]
+                image_type = extension
+                if extension == '.png' or extension == '.jpg':
+                    file_name = f'{new_id}_{new_name}{extension}'
+                    destination = "\\".join([folder_name, file_name])
+                    uploaded_files.save(destination)
+                    new_image = file_name
+                else:
+                    return render_template('reuseable_components/error.html', page='Insertion',
+                                           error_message='The supported file types are .png and .jpg.')
         if new_id is None or new_name is None or new_manufacturer is None or new_category is None or \
                 new_quantity is None:
             return render_template('reuseable_components/error.html', page='Insertion',
-                                   error_message='There was an issue adding your product')
+                                   error_message='Make sure to fill the name, manufacturer, category, and quantity '
+                                                 'inputs.')
         if request.form['notify-input'] == '':
             new_minimum = round(new_quantity * .1)
         else:
             new_minimum = request.form.get('notify-input')
-        # Use the primary unique ID to make unique barcodes
         b = int(new_id) + 100000000000
-        # Uses the ean13 barcode format to incorporate the b variable
         ean = barcode.get('ean13', str(b))
-        # The file is saved by using the unique primary ID of
-        # the product to easily obtain the file
-        ean.save(new_id)
+        folder_name = os.path.join(APP_ROOT, 'static\\images\\barcodes')
+        if not os.path.isdir(folder_name):
+            os.mkdir(folder_name)
+        file_name = f'{new_id}'
+        destination = "\\".join([folder_name, file_name])
+        ean.save(destination)
 
         try:
             new_item = Product(id=new_id, name=new_name, manufacturer=new_manufacturer, category=new_category,
-                               quantity=new_quantity, location=work_location, barcode=b, notify_minimum=new_minimum)
+                               quantity=new_quantity, location=work_location, barcode=b, notify_minimum=new_minimum,
+                               image_name=new_image, image_type=image_type)
 
             action_record = ActionRecord(employee_id=employee_id, employee_first_name=first_name,
                                          employee_last_name=last_name, action="Added product",
@@ -237,15 +264,15 @@ def manage():
             return redirect('/manage')
         except:
             return render_template('reuseable_components/error.html', page='Insertion',
-                                   error_message='There was an issue adding your product')
-
+                                   error_message='There was an issue adding your product. '
+                                                 'Make sure you are logged in modifiying products, and check if the '
+                                                 'product already exists. ')
     else:
         products = Product.query.filter_by(location=work_location).order_by(Product.id).all()
         low_stock = []
         for p in products:
             if p.quantity < p.notify_minimum:
                 low_stock.append(p.name)
-                print(p.name)
         session['low_stock'] = low_stock
         return render_template('/product_management/manage.html', products=products)
 
@@ -253,11 +280,9 @@ def manage():
 # New URL for Barcode branch
 @app.route('/manage/download/<int:id>', methods=['GET', 'POST'])
 def download(id):
-    # Uses the product unique primary ID to locate the file
+    folder_name = os.path.join(APP_ROOT, 'static\\images\\barcodes')
     file_name = str(id) + '.svg'
-    # Returns the .svg file of the barcode
-    # you can do that {} method and store it in a file, figure out how to put it in a file first
-    return send_file(file_name)
+    return send_from_directory(folder_name, file_name, as_attachment=True)
 
 
 @app.route('/manage/delete/<int:id>')
@@ -297,9 +322,31 @@ def update(id):
         product.name = new_name
         product.manufacturer = new_manufacturer
         product.quantity = new_quantity
-
         action_record = ActionRecord(employee_id=employee_id, employee_first_name=first_name, employee_last_name=last_name,
                                      action="Updated product", current_time=current_time)
+        if 'files' in request.files:
+            folder_name = os.path.join(APP_ROOT, 'static\\images\\products')
+            if not os.path.isdir(folder_name):
+                pass
+            uploaded_files = request.files.get('files')
+            file_name = uploaded_files.filename
+            if file_name == '':
+                pass
+            else:
+                extension = file_name[file_name.index('.'):len(file_name)]
+                product.image_type = extension
+                if extension == '.png' or extension == '.jpg':
+                    file_name = f'{id}_{new_name}{extension}'
+                    destination = "\\".join([folder_name, file_name])
+                    uploaded_files.save(destination)
+                    product.image_name = file_name
+                else:
+                    return render_template('reuseable_components/error.html', page='Insertion',
+                                           error_message='The supported file types are .png and .jpg.')
+        if new_name is None or new_manufacturer is None or new_quantity is None:
+            return render_template('reuseable_components/error.html', page='Insertion',
+                                   error_message='Make sure to fill the name, manufacturer, category, and quantity '
+                                                 'inputs.')
         try:
             db.session.add(action_record)
             db.session.commit()

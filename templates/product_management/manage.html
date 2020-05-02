@@ -53,7 +53,7 @@
             </form>
         </div>
         <div id="add-product-section" style="display:none;">
-            <form action="/manage" method="POST">
+            <form action="/manage" method="POST" enctype="multipart/form-data">
                 <br>
                 <h3>Add Product</h3>
                 <br>
@@ -77,7 +77,7 @@
                     <input class="form-control" type="text" name="notify-input" placeholder="Amount for Low Quantity Notification">
                 </div>
                 <br>
-                <div class="form-group">
+                <div class="form-group" style="padding-bottom:10px;">
                     <select class="form-control" name="category-input">
                         <option disabled selected value>Select a category</option>
                         <option value="Food">Food</option>
@@ -86,7 +86,11 @@
                         <option value="Supplies">Supplies</option>
                     </select>
                 </div>
-                <br>
+                <div class="custom-file">
+                    <input class="customfile-input" name="files" type="file" id="image-input">
+                    <label class="custom-file-label" for="image-input">Choose File</label>
+                </div>
+                <br><br>
                 <input class="btn btn-lg btn-primary" type="submit" value="Add Item">
             </form>
         </div>
@@ -100,6 +104,7 @@
                 <thead>
                 <tr>
                     <th>ID</th>
+                    <th>Image</th>
                     <th>Name</th>
                     <th>Manufacturer</th>
                     <th>Category</th>
@@ -113,6 +118,15 @@
                     {% for product in products %}
                     <tr>
                         <td>{{ product.id }}</td>
+                        <td>
+                            {% if product.image_type == '.png' %}
+                                <img style="width:30px;height=30px;" src="/static/images/products/{{ product.id }}_{{ product.name }}.png">
+                            {% elif product.image_type == '.jpg' %}
+                                <img style="width:30px;height=30px;" src="/static/images/products/{{ product.id }}_{{ product.name }}.jpg">
+                            {% else %}
+                                <p>No Image Available</p>
+                            {% endif %}
+                        </td>
                         <td>{{ product.name }}</td>
                         <td>{{ product.manufacturer }}</td>
                         <td>{{ product.category }}</td>
@@ -135,47 +149,50 @@
     </div>
 </body>
 <script>
-        function add_product() {
-            document.getElementById("add-product-section").style.display = "initial";
-            document.getElementById("add-button").innerHTML = "X";
-            document.getElementById("add-button").style.marginRight = "40px";
-            document.getElementById("add-button").setAttribute("onclick", "reset_buttons()");
-            document.getElementById("search-button").style.display = "none";
-            document.getElementById("search-category-button").style.display = "none";
-        }
-        function search_product() {
-            document.getElementById("search-product-section").style.display = "initial";
-            document.getElementById("search-button").innerHTML = "X";
-            document.getElementById("search-button").style.marginRight = "40px";
-            document.getElementById("search-button").setAttribute("onclick", "reset_buttons()");
-            document.getElementById("add-button").style.display = "none";
-            document.getElementById("search-category-button").style.display = "none";
-            document.getElementById("product-table").style.display="none";
-        }
-        function search_category() {
-            document.getElementById("search-category-section").style.display = "initial";
-            document.getElementById("search-category-button").innerHTML = "X";
-            document.getElementById("search-category-button").setAttribute("onclick", "reset_buttons()");
-            document.getElementById("add-button").style.display = "none";
-            document.getElementById("search-button").style.display = "none";
-            document.getElementById("product-table").style.display="none";
-        }
-        function reset_buttons() {
-            document.getElementById("add-product-section").style.display = "none";
-            document.getElementById("search-product-section").style.display = "none";
-            document.getElementById("search-category-section").style.display = "none";
-            document.getElementById("add-button").innerHTML = "Add";
-            document.getElementById("add-button").style.display = "initial";
-            document.getElementById("add-button").style.marginRight = "0px";
-            document.getElementById("add-button").setAttribute("onclick", "add_product()");
-            document.getElementById("search-button").innerHTML = "Search";
-            document.getElementById("search-button").style.display = "initial";
-            document.getElementById("search-button").style.marginRight = "0px";
-            document.getElementById("search-button").setAttribute("onclick", "search_product()");
-            document.getElementById("search-category-button").innerHTML = "Search By Category";
-            document.getElementById("search-category-button").style.display = "initial";
-            document.getElementById("search-category-button").setAttribute("onclick", "search_category()");
-            document.getElementById("product-table").style.display="initial";
-        }
-    </script>
+    $('input[type="file"]').change(function(e){
+        $('.custom-file-label').html(e.target.files[0].name);
+    });
+    function add_product() {
+        document.getElementById("add-product-section").style.display = "initial";
+        document.getElementById("add-button").innerHTML = "X";
+        document.getElementById("add-button").style.marginRight = "40px";
+        document.getElementById("add-button").setAttribute("onclick", "reset_buttons()");
+        document.getElementById("search-button").style.display = "none";
+        document.getElementById("search-category-button").style.display = "none";
+    }
+    function search_product() {
+        document.getElementById("search-product-section").style.display = "initial";
+        document.getElementById("search-button").innerHTML = "X";
+        document.getElementById("search-button").style.marginRight = "40px";
+        document.getElementById("search-button").setAttribute("onclick", "reset_buttons()");
+        document.getElementById("add-button").style.display = "none";
+        document.getElementById("search-category-button").style.display = "none";
+        document.getElementById("product-table").style.display="none";
+    }
+    function search_category() {
+        document.getElementById("search-category-section").style.display = "initial";
+        document.getElementById("search-category-button").innerHTML = "X";
+        document.getElementById("search-category-button").setAttribute("onclick", "reset_buttons()");
+        document.getElementById("add-button").style.display = "none";
+        document.getElementById("search-button").style.display = "none";
+        document.getElementById("product-table").style.display="none";
+    }
+    function reset_buttons() {
+        document.getElementById("add-product-section").style.display = "none";
+        document.getElementById("search-product-section").style.display = "none";
+        document.getElementById("search-category-section").style.display = "none";
+        document.getElementById("add-button").innerHTML = "Add";
+        document.getElementById("add-button").style.display = "initial";
+        document.getElementById("add-button").style.marginRight = "0px";
+        document.getElementById("add-button").setAttribute("onclick", "add_product()");
+        document.getElementById("search-button").innerHTML = "Search";
+        document.getElementById("search-button").style.display = "initial";
+        document.getElementById("search-button").style.marginRight = "0px";
+        document.getElementById("search-button").setAttribute("onclick", "search_product()");
+        document.getElementById("search-category-button").innerHTML = "Search By Category";
+        document.getElementById("search-category-button").style.display = "initial";
+        document.getElementById("search-category-button").setAttribute("onclick", "search_category()");
+        document.getElementById("product-table").style.display="initial";
+    }
+</script>
 </html>
