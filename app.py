@@ -1,6 +1,4 @@
-from flask import Flask, render_template, request, redirect, send_file, jsonify, session
-import datetime
-
+from flask import Flask, render_template, request, redirect, send_file, jsonify, session, Response
 from flask_sqlalchemy import SQLAlchemy
 import json
 import barcode
@@ -13,6 +11,9 @@ from flask_admin.contrib.sqla import ModelView
 from flask_login import UserMixin, LoginManager, current_user, login_user, logout_user
 
 import datetime
+
+# for export feature import these
+import csv
 
 app = Flask(__name__)
 app.secret_key = "super secret key"
@@ -153,7 +154,7 @@ def new_user():
             new_admin = 1
         else:
             new_admin = 0
-            
+
         new_user = User(id=new_id, username=new_username, email=new_email, first_name=new_first_name,
                         last_name=new_last_name, password=new_password, location=new_location, in_work=False,
                         admin=new_admin)
@@ -394,6 +395,35 @@ def admin_login():
         except:
             return "Error please contact Management"
     return render_template('/admin_management/admin_login.html')
+
+
+# To export table to csv format
+@app.route('/export', methods=['GET'])
+def export():
+
+    # header row for csv file
+    prod_list = [['id', 'name', 'manufacturer', 'category', 'quantity', 'location', 'barcode']]
+
+    # grab all table contents
+    prod = Product.query.all()
+
+    # add the contents to a list
+    for each in prod:
+        prod_list.append([each.id, each.name, each.manufacturer,
+                          each.category, each.quantity, each.location, each.barcode])
+
+    # add a newline for every new row
+    prod_list = '\n'.join([','.join(map(str, item)) for item in prod_list])
+    prod_list = str(prod_list)
+
+    csv = prod_list
+
+    return Response(
+        csv,
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment; filename=product_data.csv"}
+    )
+
 
 
 if __name__ == "__main__":
