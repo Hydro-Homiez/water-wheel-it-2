@@ -7,12 +7,24 @@
 <body>
     {% include 'reuseable_components/navigation_bar.html' %}
     <div class="container">
-        <div class="col text-center">
-            <h1>About Us</h1>
-            <p>
-                Welcome to our page! We are Water Wheel, a small company based in Fullerton, California. Our goal is to make a well designed database to help you, the user. We'd love it if you were to submit any feedback (good or bad) at davidhuang@waterwheelcompany.com.
-            </p>
-            <img src="{{ url_for('static', filename='images/wwlogo1.png') }}" alt="Water Wheel" width="250px;" height="250px;">
+        <div class="col">
+            <br>
+            <div class="row">
+                <div class="col-md-8">
+                    <h2>About Us</h2>
+                    <p>
+                        Welcome to our page! We are Water Wheel, a small company based in Fullerton, California.
+                        Our goal is to make a well designed database to help you, the user. We'd love it if you were to
+                        submit any feedback (good or bad) at davidhuang@waterwheelcompany.com.
+                    </p>
+                </div>
+                <div class="col-md-4">
+                    <img src="{{ url_for('static', filename='images/wwlogo1.png') }}" alt="Water Wheel" width="120px;" height="120px;">
+                </div>
+            </div>
+            <br>
+            <h2>Tutorial</h2>
+            <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vTTGkPK8lOISI0qiFWCBI2F8J63mJmYFMWnB6kyb9i4MjBPM3xXmOr1DipO9sZ_GXbCQ3f-LNkUcwZW/embed?start=true&loop=false&delayms=3000" frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
         </div>
     </div>
 </body>

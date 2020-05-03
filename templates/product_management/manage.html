@@ -3,23 +3,23 @@
 <head>
     {% include 'reuseable_components/head_tag_information.html' %}
     <title>Login</title>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
 </head>
 <body>
-    <nav class="w3-bar w3-blue">
-        <a href="/" class="w3-button w3-bar-item">Home</a>
-        <a href="/login" class="w3-button w3-bar-item">Login</a>
-        <a href="/manage" class="w3-button w3-bar-item">Database</a>
-        <a href="/graphs" class="w3-button w3-bar-item">Graphs</a>
-        <a href="/time" class="w3-button w3-bar-item">Clock-in</a>
-        <a href="/calendar" class="w3-button w3-bar-item">Calendar</a>
-        <a href="/admin-login" class="w3-button w3-bar-item">Admin</a>
-        <a href="/logout" class="w3-button w3-bar-item">Log Out</a>
-        <a href="/about" class="w3-button w3-bar-item">About</a>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+        <a href="/" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Home</a>
+        <a href="/login" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Login</a>
+        <a href="/manage" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Database</a>
+        <a href="/graphs" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Graphs</a>
+        <a href="/time" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Clock-in</a>
+        <a href="/calendar" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Calendar</a>
+        <a href="/admin-login" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Admin</a>
+        <a href="/about" class="nav-item text-white" style="padding:5px 15px 5px 15px;">About</a>
+        <a href="/logout" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Log Out</a>
     </nav>
     <br>
     <form action="/export" method="GET"><button class="btn btn-lg btn-primary float-right" id="export-button" type="submit" style="margin-left:10px;margin-right:40px;">Export</button></form>
-
-    <button class="btn btn-lg btn-primary float-right" id="search-category-button" onclick="search_category()"  style="margin-left:10px;margin-right:40px;">Search By Category</button>
+    <button class="btn btn-lg btn-primary float-right" id="search-category-button" onclick="search_category()"  style="margin-left:10px;">Search By Category</button>
     <button class="btn btn-lg btn-primary float-right" id="search-button" onclick="search_product()"  style="margin-left:10px;">Search</button>
     <button class="btn btn-lg btn-primary float-right" id="add-button" onclick="add_product()">Add</button>
     <div class="container">
@@ -100,7 +100,7 @@
             <br><br>
             <h2>Product Table</h2>
             {% if products|length < 1 %}
-            <h4>There are no items. Create one above!</h4>
+                <h4>There are no items. Create one above!</h4>
             {% else %}
             <table class="table">
                 <thead>
@@ -136,11 +136,16 @@
                         <td>{{ product.location }}</td>
                         <td>{{ product.barcode }}</td>
                         <td>
-                            <a href="/manage/delete/{{product.id}}">Delete</a>
-                            <br>
-                            <a href="/manage/update/{{product.id}}">Update</a>
-                            <br>
-                            <a href="/manage/download/{{product.id}}">Download barcode</a>
+                            <div class="dropdown show">
+                                <a class="btn btn-primary dropdown-toggle"  href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Actions
+                                </a>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                    <a class="dropdown-item" href="/manage/download/{{product.id}}">Download barcode</a>
+                                    <a class="dropdown-item" href="/manage/update/{{product.id}}">Update</a>
+                                    <a class="dropdown-item" href="/manage/delete/{{product.id}}">Delete</a>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -161,6 +166,7 @@
         document.getElementById("add-button").setAttribute("onclick", "reset_buttons()");
         document.getElementById("search-button").style.display = "none";
         document.getElementById("search-category-button").style.display = "none";
+        document.getElementById("export-button").style.display = "none";
     }
     function search_product() {
         document.getElementById("search-product-section").style.display = "initial";
@@ -170,6 +176,7 @@
         document.getElementById("add-button").style.display = "none";
         document.getElementById("search-category-button").style.display = "none";
         document.getElementById("product-table").style.display="none";
+        document.getElementById("export-button").style.display = "none";
     }
     function search_category() {
         document.getElementById("search-category-section").style.display = "initial";
@@ -178,6 +185,7 @@
         document.getElementById("add-button").style.display = "none";
         document.getElementById("search-button").style.display = "none";
         document.getElementById("product-table").style.display="none";
+        document.getElementById("export-button").style.display = "none";
     }
     function reset_buttons() {
         document.getElementById("add-product-section").style.display = "none";
@@ -196,5 +204,32 @@
         document.getElementById("search-category-button").setAttribute("onclick", "search_category()");
         document.getElementById("product-table").style.display="initial";
     }
+    var barData = {
+        labels : [
+          {% for product in products %}
+           "{{ product.name }}",
+          {% endfor %}
+	    ],
+
+        datasets : [{
+          fillColor: "rgba(151,187,205,0.2)",
+          strokeColor: "rgba(151,187,205,1)",
+          pointColor: "rgba(151,187,205,1)",
+          data : [
+            {% for product in products %}
+               {{ product.quantity }},
+              {% endfor %}
+	    ]
+          }
+        ]
+      }
+     var mychart = document.getElementById("chart").getContext("2d");
+     new Chart(mychart).Bar(barData, {
+       scaleStartValue: 0,
+       scaleShowGridLines : true,
+       barShowStroke : true,
+       scaleShowLabels: true
+       }
+     );
 </script>
 </html>
