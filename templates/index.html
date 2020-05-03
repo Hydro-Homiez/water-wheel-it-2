@@ -6,68 +6,56 @@
 </head>
 <body>
     {% include 'reuseable_components/navigation_bar.html' %}
-    <div class="container col-10">
-        <div class="col-md">
-            <br>
-            <h1>Home</h1>
-            <p>Press one of the buttons on top</p>
-            <h2>Features</h2>
-            <ul>
-                <li>
-                    <h4>Login</h4>
-                    <p>
-                        The login system works if you type in an existing user's username
-                        and password. To find that, click on the tour tab to see the list
-                        of users. Within login, you can also create a new user. Filling in
-                        the forms will create a new user.
-                    </p>
-                </li>
-                <li>
-                    <h4>Database</h4>
-                    <p>
-                        The product systems allows the user to create, delete, and update
-                        items in the database. The list of items are also displayed within
-                        the same page. Filling out the forms will generate the product.
-                    </p>
-                </li>
-                <li>
-                    <h4>Clock-in</h4>
-                    <p>
-                        With a registered employee ID, a user can input their ID to clock-in
-                        and clock-out. There is a table that displays when the user clocked-in
-                        and clocked-out along with their name and employee ID.
-                    </p>
-                </li>
-                <li>
-                    <h4>Calendar</h4>
-                    <p>
-                        A page that displays a calendar of events. The calendar is able to show
-                        different events.
-                    </p>
-                </li>
-                <li>
-                    <h4>Admin</h4>
-                    <p>
-                        A page that requires admin access to see the user database. A user
-                        can register for admin access by using an admin code.
-                    </p>
-                </li>
-                <li>
-                    <h4>About</h4>
-                    <p>
-                        A page that describes what our project does and what our goals are.
-                    </p>
-                </li>
-                <li>
-                    <h4>Logout</h4>
-                    <p>
-                        This log the user out. By using this, another user can log in and
-                        use continue to use the website. 
-                    </p>
-                </li>
-            </ul>
-            <h2>Tutorial</h2>
-            <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vTTGkPK8lOISI0qiFWCBI2F8J63mJmYFMWnB6kyb9i4MjBPM3xXmOr1DipO9sZ_GXbCQ3f-LNkUcwZW/embed?start=true&loop=false&delayms=3000" frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+    <div class="jumbotron">
+        <div class="container">
+            <h1 class="display-3">Water Wheels</h1>
+            <p>
+                An inventory management tracking system that focuses on productivity, transparency, and security.
+            </p>
+        </div>
+    </div>
+    <div class="container">
+        <br>
+        <h2>Features</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <h4>Productivity</h4>
+                <p>
+                    The product systems allows the user to create, delete, and update
+                    items in the database. The list of items are also displayed within
+                    the same page. Filling out the forms will generate the product.
+                </p>
+                <p>
+                    Along with the database, there is a graph that displays which products are in stock in
+                    ascending order of what is in stock. This allows the user to visualize the data to quickly
+                    find which products are low in stock.
+                </p>
+                <p>
+                    A page that displays a calendar of events. The calendar is able to show
+                    different events across multiple years while having the capability of
+                    adding new ones.
+                </p>
+            </div>
+            <div class="col-md-4">
+                <h4>Transparency</h4>
+                <p>
+                    Actions a user takes within the database and admin features will be recorded
+                    for reference.
+                </p>
+                <p>
+                    With a registered employee ID, a user can input their ID to clock-in
+                    and clock-out. There is a table that displays when the user clocked-in
+                    and clocked-out along with their name and employee ID.
+                </p>
+            </div>
+            <div class="col-md-4">
+              <h4>Security</h4>
+                <p>
+                    A page that requires admin access to see the user database. A user
+                    can register for admin access by using an admin code. The admin feature restricts
+                    users from deleting users and other important data.
+                </p>
+            </div>
         </div>
     </div>
 </body>
