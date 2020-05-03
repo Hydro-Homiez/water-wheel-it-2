@@ -36,7 +36,5 @@
     $(window).on('load',function(){
         $('#notification').modal('show');
     });
-        {{ session.pop('low_stock', '')|safe }}
-</script>
-<script>
+    {{ session.pop('low_stock', '')|safe }}
 </script>
