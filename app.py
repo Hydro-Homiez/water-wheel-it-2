@@ -73,6 +73,21 @@ class ActionRecord(db.Model):
     current_time = db.Column(db.DateTime, nullable=False)
 
 
+class CalendarEvent(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    start = db.Column(db.String(200), nullable=False)
+    all_day = db.Column(db.Boolean, default=True)
+
+    @property
+    def serialized(self):
+        return {
+            'title': self.title,
+            'start': self.start,
+            'allDay': self.all_day
+        }
+
+
 # Page Routing
 # Single Page Navigation
 @app.route('/')
@@ -396,9 +411,47 @@ def search_category():
 
 # displays the calendar page
 # calendar uses the "full calendar" api
-@app.route('/calendar')
+@app.route('/calendar', methods=['GET', 'POST'])
 def calendar():
+    if request.method == 'POST':
+        print('working')
+        print(request.json)
+        title = request.json['title']
+        start = request.json['start']
+        all_day = request.json['allDay']
+        print(title)
+        calendar_event = CalendarEvent(title=title, start=start, all_day=all_day)
+        print(calendar_event)
+        try:
+            db.session.add(calendar_event)
+            db.session.commit()
+            print('saved')
+        except:
+            return render_template('reuseable_components/error.html', page='Calendar',
+                                   error_message='There was an issue adding the event.')
     return render_template("calendar.html")
+
+
+@app.route('/calendar_edit')
+def calendar_edit():
+    events = CalendarEvent.query.all()
+    print(events)
+    if len(events) > 0:
+        print('more than one')
+    return render_template("calendar_edit.html", events=events)
+
+
+@app.route('/calendar_data')
+def calendar_data():
+    events = CalendarEvent.query.all()
+    if len(events) > 0:
+        date = []
+        for e in events:
+            date.append(e.serialized)
+        response = jsonify(date)
+        print(response.data)
+        return response
+    return
 
 
 # Graphs page
