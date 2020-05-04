@@ -3,59 +3,66 @@
 <head>
     {% include 'reuseable_components/head_tag_information.html' %}
     <title>Overview</title>
+<style>
+.img-txt { 
+            text-align:left; 
+			position: absolute;
+            top: 20%;
+			left: 9.5%;
+            color: white; 
+		}
+</style>
 </head>
 <body>
     {% include 'reuseable_components/navigation_bar.html' %}
-    <div class="jumbotron">
-        <div class="container">
-            <div class="col-md-11">
-                <img style="float:right;margin-top:-30px;" src="{{ url_for('static', filename='images/Pngtreeengagement_rate_isometric_illustration_concept._4180684.png') }}" width="200px;" height="200px;">
+	<img style="background-position:center; position:relative; background-repeat: no-repeat; background-size: cover;" src="{{ url_for('static', filename='images/tnew.jpg') }}">
+        <div class="img-txt">
                 <h1 class="display-3">Water Wheels</h1>
                 <p>
-                    An inventory management tracking system that focuses on productivity, transparency, and security.
+                    An inventory management tracking system focused on productivity, transparency, and security.
                 </p>
-            </div>
         </div>
-    </div>
     <div class="container">
         <br>
         <div class="row">
             <div class="col-md-4">
                 <h4>Productivity</h4>
                 <p>
-                    The product systems allows the user to create, delete, and update
-                    items in the database. The list of items are also displayed within
-                    the same page. Filling out the forms will generate the product.
+                    Create, delete, and update
+                    items with ease. Items are displayed within
+                    a table for quick, accessible viewing.
                 </p>
                 <p>
-                    Along with the database, there is a graph that displays which products are in stock in
-                    ascending order of what is in stock. This allows the user to visualize the data to quickly
-                    find which products are low in stock.
+                    See which products are in stock
+                    at a glance with highlighted low-stock items.
+					Visualize current inventory data with the power of
+                    our graphical stock display.
                 </p>
                 <p>
-                    A page that displays a calendar of events. The calendar is able to show
-                    different events across multiple years while having the capability of
-                    adding new ones.
+                    Keep your schedule on track with our built-in calendar and timekeeping systems. Show
+                    upcoming events and important dates for your company and log your hours with the press of a button.
                 </p>
+				<p>
+					Need help? Find a short tutorial under the About tab.
+				</p>
             </div>
             <div class="col-md-4">
                 <h4>Transparency</h4>
                 <p>
-                    Actions a user takes within the database and admin features will be recorded
-                    for reference.
+                    Actions taken within the database and admin features are recorded
+                    to prevent unauthorized access and keep your company's data safe.
                 </p>
                 <p>
-                    With a registered employee ID, a user can input their ID to clock-in
-                    and clock-out. There is a table that displays when the user clocked-in
-                    and clocked-out along with their name and employee ID.
+                    With a registered employee ID, users can input their ID to clock in
+                    and clock out. A table displays when users have clocked in
+                    and out along with their name and employee ID.
                 </p>
             </div>
             <div class="col-md-4">
               <h4>Security</h4>
                 <p>
-                    A page that requires admin access to see the user database. A user
-                    can register for admin access by using an admin code. The admin feature restricts
-                    users from deleting users and other important data.
+                    Management of critical data such as user accounts is locked behind specialized admin accounts.
+					These require a special access code to be utilized, restricting these functions.
                 </p>
             </div>
         </div>

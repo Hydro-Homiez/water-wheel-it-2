@@ -7,13 +7,24 @@
 <head>
     {% include 'reuseable_components/head_tag_information.html' %}
     <title>Login</title>
+<style>
+.login-ad{ 
+            text-align: center;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+		}
+</style>
 </head>
 <body>
     {% include 'reuseable_components/navigation_bar.html' %}
-    <div class="container col-5 text-center">
+	<img style="background-position:center; position:relative; background-repeat: no-repeat; background-size: cover;" src="{{ url_for('static', filename='images/log8.jpg') }}">
+    <div class="login-ad">
         <div class="col-md">
             <br>
             <h1>Admin Login</h1>
+			<br>
             <form action="/admin-login" method="POST">
                 <div class="form-label-group">
                     <input class="form-control" type="text" name="username-input" placeholder="Username">
@@ -23,7 +34,7 @@
                     <input class="form-control" type="password" name="password-input" placeholder="Password">
                 </div>
                 <br>
-                <input class="btn btn-lg btn-primary" type="submit" value="Sign up">
+                <input class="btn btn-lg btn-primary" type="submit" value="Submit">
                 <br>
             </form>
             <br>
