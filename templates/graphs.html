@@ -3,7 +3,7 @@
 <head>
     {% include 'reuseable_components/head_tag_information.html' %}
     <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js'></script>
-    <title>Product Graphs</title>
+    <title>Graphs</title>
 </head>
 <body>
     {% include 'reuseable_components/navigation_bar.html' %}
@@ -11,6 +11,9 @@
     <div class="container">
         <div class="col text-center">
             <h2>Quantity of Products</h2>
+            {% if products|length < 1 %}
+                <h4>There are no items. Create one above!</h4>
+            {% endif %}
             <canvas id="chart" width="600" height="400"></canvas>
         </div>
     </div>

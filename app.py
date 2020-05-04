@@ -345,35 +345,38 @@ def update(id):
                                      action="Updated product", current_time=current_time)
         if 'files' in request.files:
             folder_name = os.path.join(APP_ROOT, 'static\\images\\products')
-            if not os.path.isdir(folder_name):
-                pass
-            uploaded_files = request.files.get('files')
-            file_name = uploaded_files.filename
-            if file_name == '':
-                pass
-            else:
-                extension = file_name[file_name.index('.'):len(file_name)]
-                product.image_type = extension
-                if extension == '.png' or extension == '.jpg':
-                    file_name = f'{id}_{new_name}{extension}'
-                    destination = "\\".join([folder_name, file_name])
-                    uploaded_files.save(destination)
-                    product.image_name = file_name
+            if os.path.exists(folder_name):
+                print('found')
+                uploaded_files = request.files.get('files')
+                file_name = uploaded_files.filename
+                if file_name == '':
+                    pass
                 else:
-                    return render_template('reuseable_components/error.html', page='Insertion',
-                                           error_message='The supported file types are .png and .jpg.')
-        if new_name is None or new_manufacturer is None or new_quantity is None:
-            return render_template('reuseable_components/error.html', page='Insertion',
-                                   error_message='Make sure to fill the name, manufacturer, category, and quantity '
-                                                 'inputs.')
-        try:
-            db.session.add(action_record)
-            db.session.commit()
-            return redirect('/manage')
-        except:
-            return render_template('reuseable_components/error.html', page='Update',
-                                   error_message='There was an issue updating your task')
+                    extension = file_name[file_name.index('.'):len(file_name)]
+                    product.image_type = extension
+                    if extension == '.png' or extension == '.jpg':
+                        file_name = f'{id}_{new_name}{extension}'
+                        destination = "\\".join([folder_name, file_name])
+                        uploaded_files.save(destination)
+                        product.image_name = file_name
+                    else:
+                        return render_template('reuseable_components/error.html', page='Insertion',
+                                               error_message='The supported file types are .png and .jpg.')
+            if new_name is None or new_manufacturer is None or new_quantity is None:
+                return render_template('reuseable_components/error.html', page='Insertion',
+                                       error_message='Make sure to fill the name, manufacturer, category, and quantity '
+                                                     'inputs.')
+            try:
+                db.session.add(action_record)
+                db.session.commit()
+                return redirect('/manage')
+            except:
+                return render_template('reuseable_components/error.html', page='Update',
+                                       error_message='There was an issue updating your task')
 
+            else:
+                print('not')
+                os.mkdir(folder_name)
     else:
         return render_template('product_management/update.html', product=product)
 
