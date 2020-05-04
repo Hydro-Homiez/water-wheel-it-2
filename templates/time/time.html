@@ -9,14 +9,14 @@
     <div class="container">
         <br>
         <div class="content">
-            <h2>Clock-In</h2>
-            <br>
+            <h2>Time Clock System</h2>
             <form action="/time" method="POST">
-                <div class="form-label-group">
-                    <input class="form-control" type="text" name="id-input" placeholder="Employee ID">
-                </div>
                 <br>
-                <input class="btn btn-lg btn-primary" type="submit" value="Enter">
+                {% if session.get('in_work') %}
+                    <input class="btn btn-lg btn-primary" type="submit" value="Clock-Out">
+                {% else %}
+                    <input class="btn btn-lg btn-primary" type="submit" value="Clock-In">
+                {% endif %}
             </form>
             {% if work_times|length < 1 %}
                 <h4 style="text-align: center">There is no time currently recorded.</h4>

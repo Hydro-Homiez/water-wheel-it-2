@@ -111,7 +111,7 @@ def profile():
 def time():
     if request.method == 'POST':
         t = datetime.datetime.now().replace(microsecond=0)
-        user_id = request.form['id-input']
+        user_id = session['user_id']
 
         user = User.query.get_or_404(user_id)
         if user.in_work:
@@ -123,6 +123,7 @@ def time():
         db.session.add(new_time)
         try:
             db.session.commit()
+            session['in_work'] = user.in_work
         except:
             return render_template('reuseable_components/error.html', page='Clock-in',
                                    error_message='Time not committed')
@@ -147,6 +148,7 @@ def login():
                         session['user_last_name'] = user.last_name
                         session['user_location'] = user.location
                         session['user_admin'] = user.admin
+                        session['in_work'] = user.in_work
                         return redirect('/login_success')
                     else:
                         return render_template('reuseable_components/error.html', page='Login',
@@ -165,7 +167,7 @@ def logout():
     session.pop('user_last_name', None)
     session.pop('user_location', None)
     session.pop('user_admin', None)
-    return redirect('/login')
+    return render_template('/user_management/logout.html')
 
 
 @app.route('/new_user', methods=['POST', 'GET'])
@@ -233,8 +235,8 @@ def manage():
         new_image = ''
         if 'files' in request.files:
             folder_name = os.path.join(APP_ROOT, 'static\\images\\products')
-            if not os.path.isdir(folder_name):
-                pass
+            if not os.path.exists(folder_name):
+                os.makedirs(folder_name)
             uploaded_files = request.files.get('files')
             file_name = uploaded_files.filename
             if file_name == '':
@@ -254,10 +256,10 @@ def manage():
         if new_id is None or new_name is None or new_manufacturer is None or new_category is None or \
                 new_quantity is None:
             return render_template('reuseable_components/error.html', page='Insertion',
-                                   error_message='Make sure to fill the name, manufacturer, category, and quantity '
+                                   error_message='Make sure to fill the ID, name, manufacturer, category, and quantity '
                                                  'inputs.')
         if request.form['notify-input'] == '':
-            new_minimum = round(new_quantity * .1)
+            new_minimum = round(int(new_quantity) * .1)
         else:
             new_minimum = request.form.get('notify-input')
         b = int(new_id) + 100000000000
@@ -273,9 +275,9 @@ def manage():
             new_item = Product(id=new_id, name=new_name, manufacturer=new_manufacturer, category=new_category,
                                quantity=new_quantity, location=work_location, barcode=b, notify_minimum=new_minimum,
                                image_name=new_image, image_type=image_type)
-
+            action = f'Added product: {new_id} {new_name}'
             action_record = ActionRecord(employee_id=employee_id, employee_first_name=first_name,
-                                         employee_last_name=last_name, action="Added product",
+                                         employee_last_name=last_name, action=action,
                                          current_time=current_time)
             db.session.add(new_item)
             db.session.add(action_record)
@@ -311,8 +313,9 @@ def delete(id):
     first_name = session.get('user_first_name', 'N/A')
     last_name = session.get('user_last_name', 'N/A')
     product_to_delete = Product.query.get_or_404(id)
+    action = f'Deleted product: {product_to_delete.id} {product_to_delete}'
     action_record = ActionRecord(employee_id=employee_id, employee_first_name=first_name, employee_last_name=last_name,
-                                 action="Deleted product", current_time=current_time)
+                                 action=action, current_time=current_time)
     try:
         db.session.delete(product_to_delete)
         db.session.add(action_record)
@@ -341,12 +344,14 @@ def update(id):
         product.name = new_name
         product.manufacturer = new_manufacturer
         product.quantity = new_quantity
-        action_record = ActionRecord(employee_id=employee_id, employee_first_name=first_name, employee_last_name=last_name,
-                                     action="Updated product", current_time=current_time)
+        action = f'Updated product: {product.id} {new_name}'
+        action_record = ActionRecord(employee_id=employee_id, employee_first_name=first_name,
+                                     employee_last_name=last_name, action=action, current_time=current_time)
         if 'files' in request.files:
             folder_name = os.path.join(APP_ROOT, 'static\\images\\products')
-            if os.path.exists(folder_name):
-                print('found')
+            if not os.path.exists(folder_name):
+                os.makedirs(folder_name)
+            else:
                 uploaded_files = request.files.get('files')
                 file_name = uploaded_files.filename
                 if file_name == '':
@@ -362,21 +367,17 @@ def update(id):
                     else:
                         return render_template('reuseable_components/error.html', page='Insertion',
                                                error_message='The supported file types are .png and .jpg.')
-            if new_name is None or new_manufacturer is None or new_quantity is None:
-                return render_template('reuseable_components/error.html', page='Insertion',
-                                       error_message='Make sure to fill the name, manufacturer, category, and quantity '
-                                                     'inputs.')
-            try:
-                db.session.add(action_record)
-                db.session.commit()
-                return redirect('/manage')
-            except:
-                return render_template('reuseable_components/error.html', page='Update',
-                                       error_message='There was an issue updating your task')
-
-            else:
-                print('not')
-                os.mkdir(folder_name)
+                if new_name is None or new_manufacturer is None or new_quantity is None:
+                    return render_template('reuseable_components/error.html', page='Insertion',
+                                           error_message='Make sure to fill the name, manufacturer, category, and quantity '
+                                                         'inputs.')
+                try:
+                    db.session.add(action_record)
+                    db.session.commit()
+                    return redirect('/manage')
+                except:
+                    return render_template('reuseable_components/error.html', page='Update',
+                                           error_message='There was an issue updating your task')
     else:
         return render_template('product_management/update.html', product=product)
 

@@ -8,14 +8,22 @@
 <body>
     <nav class="navbar navbar-expand-md navbar-dark bg-dark">
         <a href="/" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Home</a>
-        <a href="/login" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Login</a>
-        <a href="/manage" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Database</a>
-        <a href="/graphs" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Graphs</a>
-        <a href="/time" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Clock-in</a>
-        <a href="/calendar" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Calendar</a>
-        <a href="/admin-login" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Admin</a>
-        <a href="/about" class="nav-item text-white" style="padding:5px 15px 5px 15px;">About</a>
-        <a href="/logout" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Log Out</a>
+        {% if session.get('user_id') %}
+            <a href="/manage" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Database</a>
+            <a href="/graphs" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Graphs</a>
+            {% if session.get('in_work') %}
+                <a href="/time" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Clock-Out</a>
+            {% else %}
+                <a href="/time" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Clock-In</a>
+            {% endif %}
+            <a href="/calendar" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Calendar</a>
+            <a href="/admin-login" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Admin</a>
+            <a href="/about" class="nav-item text-white" style="padding:5px 15px 5px 15px;">About</a>
+            <a href="/logout" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Log Out</a>
+        {% else %}
+            <a href="/login" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Login</a>
+            <a href="/about" class="nav-item text-white" style="padding:5px 15px 5px 15px;">About</a>
+        {% endif %}
     </nav>
     <br>
     <form action="/export" method="GET"><button class="btn btn-lg btn-primary float-right" id="export-button" type="submit" style="margin-left:10px;margin-right:40px;">Export</button></form>
@@ -60,7 +68,7 @@
                 <h3>Add Product</h3>
                 <br>
                 <div class="form-label-group">
-                    <input class="form-control" type="text" name="id-input" placeholder="ID of Product">
+                    <input class="form-control" type="number" name="id-input" placeholder="ID of Product">
                 </div>
                 <br>
                 <div class="form-label-group">
@@ -72,11 +80,11 @@
                 </div>
                 <br>
                 <div class="form-label-group">
-                    <input class="form-control" type="text" name="quantity-input" placeholder="Quantity">
+                    <input class="form-control" type="number" name="quantity-input" placeholder="Quantity">
                 </div>
                 <br>
                 <div class="form-label-group">
-                    <input class="form-control" type="text" name="notify-input" placeholder="Amount for Low Quantity Notification">
+                    <input class="form-control" type="number" name="notify-input" placeholder="Amount for Low Quantity Notification">
                 </div>
                 <br>
                 <div class="form-group" style="padding-bottom:10px;">
@@ -90,7 +98,7 @@
                 </div>
                 <div class="custom-file">
                     <input class="customfile-input" name="files" type="file" id="image-input">
-                    <label class="custom-file-label" for="image-input">Choose File</label>
+                    <label class="custom-file-label" for="image-input">Choose File (Optional)</label>
                 </div>
                 <br><br>
                 <input class="btn btn-lg btn-primary" type="submit" value="Add Item">
@@ -132,7 +140,11 @@
                         <td>{{ product.name }}</td>
                         <td>{{ product.manufacturer }}</td>
                         <td>{{ product.category }}</td>
-                        <td>{{ product.quantity }}</td>
+                        {% if product.quantity < product.notify_minimum %}
+                        <td style="color:red;"><strong><em>{{ product.quantity }}</em></strong></td>
+                        {% else %}
+                            <td>{{ product.quantity }}</td>
+                        {% endif %}
                         <td>{{ product.location }}</td>
                         <td>{{ product.barcode }}</td>
                         <td>
@@ -202,6 +214,7 @@
         document.getElementById("search-category-button").innerHTML = "Search By Category";
         document.getElementById("search-category-button").style.display = "initial";
         document.getElementById("search-category-button").setAttribute("onclick", "search_category()");
+        document.getElementById("export-button").style.display = "initial";
         document.getElementById("product-table").style.display="initial";
     }
     var barData = {

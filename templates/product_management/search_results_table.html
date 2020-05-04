@@ -5,7 +5,25 @@
     <title>Login</title>
 </head>
 <body>
-    {% include 'reuseable_components/navigation_bar.html' %}
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+        <a href="/" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Home</a>
+        {% if session.get('user_id') %}
+            <a href="/manage" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Database</a>
+            <a href="/graphs" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Graphs</a>
+            {% if session.get('in_work') %}
+                <a href="/time" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Clock-Out</a>
+            {% else %}
+                <a href="/time" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Clock-In</a>
+            {% endif %}
+            <a href="/calendar" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Calendar</a>
+            <a href="/admin-login" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Admin</a>
+            <a href="/about" class="nav-item text-white" style="padding:5px 15px 5px 15px;">About</a>
+            <a href="/logout" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Log Out</a>
+        {% else %}
+            <a href="/login" class="nav-item text-white" style="padding:5px 15px 5px 15px;">Login</a>
+            <a href="/about" class="nav-item text-white" style="padding:5px 15px 5px 15px;">About</a>
+        {% endif %}
+    </nav>
 <div class="container">
     <br>
     <a href="/manage"><button class="btn btn-lg btn-primary" id="add-button">Back</button></a>
